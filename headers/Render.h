@@ -33,9 +33,37 @@ public:
 		float green;
 		float blue;
 
-		Texture(uint id, vector<float> vertices, int width, int height, int posx, int posy, size_t verticesSize);
+		Texture(uint id, vector<float> vertices, int width, int height, size_t verticesSize);
 		void resize(int newWidth, int newHeight);
+		void repos(int newx, int newy);
 		void setFilter(int filter);
+	};
+	class Vector3 {
+	public:
+		float x;
+		float y;
+		float z;
+	};
+	class Vector2 {
+	public:
+		float x;
+		float y;
+		Vector2();
+		Vector2(int x, int y);
+		Vector2(float x, float y);
+	};
+
+	class Sprite {
+	public:
+		Vector2 position;
+		void resize(int newWidth, int newHeight);
+		Vector2 getSize();
+		Render::Texture* texture;
+		Sprite(const char* path) { this->texture = Render::loadTexture(path); };
+		void checkChanges();
+	private:
+		Vector2 size;
+		Vector2 oldPosition;
 	};
 
 	static uint texture;
@@ -44,7 +72,7 @@ public:
 	static uint VBO;
 	static uint VAO;
 	static uint EBO;
-	static vector<Texture*> textures;
+	static vector<Sprite*> sprites;
 
 	static int windowWidth;
 	static int windowHeight;
@@ -53,7 +81,7 @@ public:
 	static void terminate();
 	static void renderFrame();
 
-	static Render::Texture* loadTexture(const char* path, int posx, int posy);
+	static Render::Texture* loadTexture(const char* path);
 private:
 	static GLFWwindow* window;
 	static Shader* ourShader;

@@ -18,7 +18,7 @@ uint Render::indices[] = {
 		1, 2, 3  // second triangle
 };
 
-vector<Render::Texture*> Render::textures;
+vector<Render::Sprite*> Render::sprites;
 
 int Render::windowWidth, Render::windowHeight;
 
@@ -60,11 +60,12 @@ int Render::init(GLFWwindow* renderWindow) {
 }
 
 void Render::terminate() {
-	for (Render::Texture* texture : Render::textures) {
-		delete& ((*texture).vertices);
-		delete texture;
+	for (Render::Sprite* sprite : Render::sprites) {
+		delete& (sprite->texture->vertices);
+		delete sprite->texture;
+		delete sprite;
 	}
-	delete &Render::textures;
+	delete &Render::sprites;
 	glDeleteVertexArrays(1, &Render::VAO);
 	glDeleteBuffers(1, &Render::VBO);
 	glDeleteBuffers(1, &Render::EBO);
@@ -75,15 +76,17 @@ void Render::renderFrame() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	(*Render::ourShader).use();
-	for (Texture* texture : Render::textures) {
-		(*Render::ourShader).setFloat("alpha", (*texture).alpha);
-		(*Render::ourShader).setFloat("red", (*texture).red);
-		(*Render::ourShader).setFloat("green", (*texture).green);
-		(*Render::ourShader).setFloat("blue", (*texture).blue);
-		glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
-		glBufferData(GL_ARRAY_BUFFER, (*texture).verticesSize, (*texture).vertices.data(), GL_STATIC_DRAW);
+	for (Sprite* sprite : Render::sprites) {
+		sprite->checkChanges();
 
-		glBindTexture(GL_TEXTURE_2D, (*texture).texture);
+		(*Render::ourShader).setFloat("alpha", sprite->texture->alpha);
+		(*Render::ourShader).setFloat("red", sprite->texture->red);
+		(*Render::ourShader).setFloat("green", sprite->texture->green);
+		(*Render::ourShader).setFloat("blue", sprite->texture->blue);
+		glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
+		glBufferData(GL_ARRAY_BUFFER, sprite->texture->verticesSize, sprite->texture->vertices.data(), GL_STATIC_DRAW);
+
+		glBindTexture(GL_TEXTURE_2D, sprite->texture->texture);
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
@@ -95,7 +98,7 @@ void Render::renderFrame() {
 	glfwSwapBuffers(Render::window);
 	glfwPollEvents();
 }
-Render::Texture* Render::loadTexture(const char* path, int posx, int posy) {
+Render::Texture* Render::loadTexture(const char* path) {
 	uint texture;
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
@@ -126,8 +129,8 @@ Render::Texture* Render::loadTexture(const char* path, int posx, int posy) {
 	}
 	stbi_image_free(data);
 
-	float calcPosx = (float)posx / windowWidth / 2;
-	float calcPosy = (float)posy / windowHeight / 2;
+	float calcPosx = (float)0 / windowWidth / 2; // posx instead of zero
+	float calcPosy = (float)0 / windowHeight / 2;
 	float calcWidth = ((float)width / 2) / (windowWidth / 2);
 	float calcHeight = ((float)height / 2) / (windowHeight / 2);
 
@@ -147,11 +150,10 @@ Render::Texture* Render::loadTexture(const char* path, int posx, int posy) {
 	vertices[17] = -calcHeight + calcPosy;
 	vertices[24] = -calcWidth + calcPosx;
 	vertices[25] = calcHeight + calcPosy;
-	Texture* textureObject = new Texture(texture, vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), width, height, posx, posy, sizeof(vertices));
-	Render::textures.push_back(textureObject);
+	Texture* textureObject = new Texture(texture, vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), width, height, sizeof(vertices));
 	return textureObject;
 }
-Render::Texture::Texture(uint id, vector<float> vertices, int width, int height, int posx, int posy, size_t verticesSize) {
+Render::Texture::Texture(uint id, vector<float> vertices, int width, int height, size_t verticesSize) {
 	this->texture = id;
 	this->vertices = vertices;
 	this->width = width;
@@ -195,4 +197,53 @@ void Render::Texture::resize(int newWidth, int newHeight) {
 	this->vertices[17] = -this->calcHeight + this->calcPosy;
 	this->vertices[24] = -this->calcWidth + this->calcPosx;
 	this->vertices[25] = this->calcHeight + this->calcPosy;
+}
+
+void Render::Texture::repos(int newx, int newy) {
+	this->posx = newx;
+	this->posy = newy;
+
+	this->calcPosx = (float)newx / (windowWidth / 2);
+	this->calcPosy = (float)newy / (windowHeight / 2);
+
+
+	this->vertices[0] = this->calcWidth + this->calcPosx;
+	this->vertices[1] = this->calcHeight + this->calcPosy;
+	this->vertices[8] = this->calcWidth + this->calcPosx;
+	this->vertices[9] = -this->calcHeight + this->calcPosy;
+	this->vertices[16] = -this->calcWidth + this->calcPosx;
+	this->vertices[17] = -this->calcHeight + this->calcPosy;
+	this->vertices[24] = -this->calcWidth + this->calcPosx;
+	this->vertices[25] = this->calcHeight + this->calcPosy;
+}
+
+Render::Vector2::Vector2(int x, int y) {
+	this->x = (float)x;
+	this->y = (float)y;
+}
+Render::Vector2::Vector2(float x, float y) {
+	this->x = x;
+	this->y = y;
+}
+
+void Render::Sprite::resize(int newWidth, int newHeight) {
+	if (newWidth != this->size.x || newHeight != this->size.y) {
+		this->texture->resize(newWidth, newHeight);
+	}
+	this->size.x = newWidth;
+	this->size.y = newHeight;
+}
+Render::Vector2 Render::Sprite::getSize() {
+	return this->size;
+}
+void Render::Sprite::checkChanges() {
+	if (this->position.x != this->oldPosition.x || this->position.y != this->oldPosition.y) {
+		this->texture->repos(this->position.x, this->position.y);
+		this->oldPosition.x = this->position.x;
+		this->oldPosition.y = this->position.y;
+	}
+}
+Render::Vector2::Vector2() {
+	this->x = 0;
+	this->y = 0;
 }
