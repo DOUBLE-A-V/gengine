@@ -1,7 +1,13 @@
-﻿  Render.cpp
+﻿  Gengine.cpp
+  Render.cpp
 D:\ACDEV\gengine\source\Render.cpp(96,20): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-D:\ACDEV\gengine\source\Render.cpp(279,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
-D:\ACDEV\gengine\source\Render.cpp(280,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
-D:\ACDEV\gengine\source\Render.cpp(287,56): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-D:\ACDEV\gengine\source\Render.cpp(287,38): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(176,14): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(177,15): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(266,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(267,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(274,56): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(274,38): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+  Window.cpp
+  main.cpp
+  Создание кода...
   gengine.vcxproj -> D:\ACDEV\gengine\x64\Debug\gengine.exe

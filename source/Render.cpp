@@ -169,51 +169,38 @@ void Render::Texture::updateVertices() {
 	vertices[25] = calcHeight + calcPosy;
 
 	Vector2 center = Vector2(this->posx, this->posy);
-	/*
-	Vector2 tmp;
-	tmp = Vector2(vertices[0], vertices[1]);
-	tmp = calcPointRotation(this->rotation, tmp, texPos);
-	cout << (string)tmp << endl;
-	vertices[0] = tmp.x;
-	vertices[1] = tmp.y;
-	
-	tmp = Vector2(vertices[8], vertices[9]);
-	tmp = calcPointRotation(this->rotation, tmp, texPos);
-	vertices[8] = tmp.x;
-	vertices[9] = tmp.y;
 
-	tmp = Vector2(vertices[16], vertices[17]);
-	tmp = calcPointRotation(this->rotation, tmp, texPos);
-	vertices[16] = tmp.x;
-	vertices[17] = tmp.y;
+	center.x = center.x * windowWidth;
+	center.y = center.y * windowHeight;
 
-	tmp = Vector2(vertices[24], vertices[25]);
-	tmp = calcPointRotation(this->rotation, tmp, texPos);
-	vertices[24] = tmp.x;
-	vertices[25] = tmp.y;
-	*/
-
-	float width = this->calcWidth;
-	float height = this->calcHeight;
+	float width = this->width;
+	float height = this->height;
 
 	float s = sin(rotation);
 	float c = cos(rotation);
 
-	vertices[0] = center.x + ((width / 2) * c) - ((height / 2) * s);
-	vertices[1] = center.y + ((width / 2) * s) + ((height / 2) * c);
+	vertices[0] = (center.x + ((width / 2) * c) - ((height / 2) * s)) / windowWidth;
+	vertices[1] = (center.y + ((width / 2) * s) + ((height / 2) * c)) / windowHeight;
 
-	vertices[8] = center.x + ((width / 2) * c) + ((height / 2) * s);
-	vertices[9] = center.y + ((width / 2) * s) - ((height / 2) * c);
+	vertices[8] = (center.x + ((width / 2) * c) + ((height / 2) * s)) / windowWidth;
+	vertices[9] = (center.y + ((width / 2) * s) - ((height / 2) * c)) / windowHeight;
 
-	vertices[16] = center.x - ((width / 2) * c) + ((height / 2) * s);
-	vertices[17] = center.y - ((width / 2) * s) - ((height / 2) * c);
+	vertices[16] = (center.x - ((width / 2) * c) + ((height / 2) * s)) / windowWidth;
+	vertices[17] = (center.y - ((width / 2) * s) - ((height / 2) * c)) / windowHeight;
 
-	vertices[24] = center.x - ((width / 2) * c) - ((height / 2) * s);
-	vertices[25] = center.y - ((width / 2) * s) + ((height / 2) * c);
+	vertices[24] = (center.x - ((width / 2) * c) - ((height / 2) * s)) / windowWidth;
+	vertices[25] = (center.y - ((width / 2) * s) + ((height / 2) * c)) / windowHeight;
 
 	//delete& tmp;
 	//delete& texPos;
 }
+
+void Render::updateAllVertices() {
+	for (Sprite* sprite : Render::sprites) {
+		sprite->texture->updateVertices();
+	}
+}
+
 Render::Texture::Texture(uint id, vector<float> vertices, int width, int height, size_t verticesSize) {
 	this->texture = id;
 	this->vertices = vertices;

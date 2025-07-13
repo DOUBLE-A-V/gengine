@@ -91,6 +91,8 @@ public:
 
 	static Vector2 calcPointRotation(float rotation, Vector2 pos, Vector2 axisPos);
 
+	static void updateAllVertices();
+
 	static Render::Texture* loadTexture(const char* path);
 private:
 	static GLFWwindow* window;

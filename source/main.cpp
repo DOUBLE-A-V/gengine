@@ -23,7 +23,7 @@ using GE = Gengine;
 int main() {
 	Window::init("fuck niggers 2", 800, 600);
 	Sprite* sprite = GE::createSprite("D:/daun.png");
-	sprite->resize(600, 300);
+	sprite->resize(300, 300);
 	sprite->rotation = 45;
 	Window::mainloop();
 	return 0;
