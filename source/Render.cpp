@@ -77,7 +77,6 @@ void Render::renderFrame() {
 
 	Render::ourShader->use();
 	for (Sprite* sprite : Render::sprites) {
-		sprite->texture->rotation = sprite->rotation;
 		sprite->checkChanges();
 
 		Render::ourShader->setFloat("alpha", sprite->texture->alpha);
@@ -291,6 +290,7 @@ void Render::Sprite::checkChanges() {
 	}
 
 	if (this->rotation != this->oldRotation) {
+		texture->rotation = -rotation;
 		texture->updateVertices();
 
 		oldRotation = rotation;
