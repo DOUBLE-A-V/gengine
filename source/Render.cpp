@@ -75,14 +75,18 @@ void Render::renderFrame() {
 	glClearColor(0, 0.5f, 1, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	(*Render::ourShader).use();
+	Render::ourShader->use();
 	for (Sprite* sprite : Render::sprites) {
+		sprite->texture->rotation = sprite->rotation;
 		sprite->checkChanges();
 
-		(*Render::ourShader).setFloat("alpha", sprite->texture->alpha);
-		(*Render::ourShader).setFloat("red", sprite->texture->red);
-		(*Render::ourShader).setFloat("green", sprite->texture->green);
-		(*Render::ourShader).setFloat("blue", sprite->texture->blue);
+		Render::ourShader->setFloat("alpha", sprite->texture->alpha);
+		Render::ourShader->setFloat("red", sprite->texture->red);
+		Render::ourShader->setFloat("green", sprite->texture->green);
+		Render::ourShader->setFloat("blue", sprite->texture->blue);
+		Render::ourShader->setFloat("rotation", sprite->rotation);
+		
+
 		glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
 		glBufferData(GL_ARRAY_BUFFER, sprite->texture->verticesSize, sprite->texture->vertices.data(), GL_STATIC_DRAW);
 
@@ -141,7 +145,21 @@ Render::Texture* Render::loadTexture(const char* path) {
 		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
 		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
 	};
-
+	Texture* textureObject = new Texture(texture, vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), width, height, sizeof(vertices));
+	return textureObject;
+}
+Render::Vector2 Render::calcPointRotation(float rotation, Vector2 pos, Vector2 axisPos) {
+	Vector2 newPos;
+	float s = sin(rotation);
+	float c = cos(rotation);
+	newPos.x = axisPos.x * c - (pos.y - axisPos.y) * s + axisPos.x;
+	newPos.y = (pos.x - axisPos.x) * s - (pos.y - axisPos.y) * c + axisPos.y;
+	return newPos;
+}
+Render::Vector2::operator string() {
+	return "Vector2(" + to_string(x) + ", " + to_string(y) + ")";
+}
+void Render::Texture::updateVertices() {
 	vertices[0] = calcWidth + calcPosx;
 	vertices[1] = calcHeight + calcPosy;
 	vertices[8] = calcWidth + calcPosx;
@@ -150,8 +168,52 @@ Render::Texture* Render::loadTexture(const char* path) {
 	vertices[17] = -calcHeight + calcPosy;
 	vertices[24] = -calcWidth + calcPosx;
 	vertices[25] = calcHeight + calcPosy;
-	Texture* textureObject = new Texture(texture, vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), width, height, sizeof(vertices));
-	return textureObject;
+
+	Vector2 center = Vector2(this->posx, this->posy);
+	/*
+	Vector2 tmp;
+	tmp = Vector2(vertices[0], vertices[1]);
+	tmp = calcPointRotation(this->rotation, tmp, texPos);
+	cout << (string)tmp << endl;
+	vertices[0] = tmp.x;
+	vertices[1] = tmp.y;
+	
+	tmp = Vector2(vertices[8], vertices[9]);
+	tmp = calcPointRotation(this->rotation, tmp, texPos);
+	vertices[8] = tmp.x;
+	vertices[9] = tmp.y;
+
+	tmp = Vector2(vertices[16], vertices[17]);
+	tmp = calcPointRotation(this->rotation, tmp, texPos);
+	vertices[16] = tmp.x;
+	vertices[17] = tmp.y;
+
+	tmp = Vector2(vertices[24], vertices[25]);
+	tmp = calcPointRotation(this->rotation, tmp, texPos);
+	vertices[24] = tmp.x;
+	vertices[25] = tmp.y;
+	*/
+
+	float width = this->calcWidth;
+	float height = this->calcHeight;
+
+	float s = sin(rotation);
+	float c = cos(rotation);
+
+	vertices[0] = center.x + ((width / 2) * c) - ((height / 2) * s);
+	vertices[1] = center.y + ((width / 2) * s) + ((height / 2) * c);
+
+	vertices[8] = center.x + ((width / 2) * c) + ((height / 2) * s);
+	vertices[9] = center.y + ((width / 2) * s) - ((height / 2) * c);
+
+	vertices[16] = center.x - ((width / 2) * c) + ((height / 2) * s);
+	vertices[17] = center.y - ((width / 2) * s) - ((height / 2) * c);
+
+	vertices[24] = center.x - ((width / 2) * c) - ((height / 2) * s);
+	vertices[25] = center.y - ((width / 2) * s) + ((height / 2) * c);
+
+	//delete& tmp;
+	//delete& texPos;
 }
 Render::Texture::Texture(uint id, vector<float> vertices, int width, int height, size_t verticesSize) {
 	this->texture = id;
@@ -189,14 +251,7 @@ void Render::Texture::resize(int newWidth, int newHeight) {
 	this->calcHeight = ((float)newHeight / 2) / (windowHeight / 2);
 
 
-	this->vertices[0] = this->calcWidth + this->calcPosx;
-	this->vertices[1] = this->calcHeight + this->calcPosy;
-	this->vertices[8] = this->calcWidth + this->calcPosx;
-	this->vertices[9] = -this->calcHeight + this->calcPosy;
-	this->vertices[16] = -this->calcWidth + this->calcPosx;
-	this->vertices[17] = -this->calcHeight + this->calcPosy;
-	this->vertices[24] = -this->calcWidth + this->calcPosx;
-	this->vertices[25] = this->calcHeight + this->calcPosy;
+	this->updateVertices();
 }
 
 void Render::Texture::repos(int newx, int newy) {
@@ -206,15 +261,7 @@ void Render::Texture::repos(int newx, int newy) {
 	this->calcPosx = (float)newx / (windowWidth / 2);
 	this->calcPosy = (float)newy / (windowHeight / 2);
 
-
-	this->vertices[0] = this->calcWidth + this->calcPosx;
-	this->vertices[1] = this->calcHeight + this->calcPosy;
-	this->vertices[8] = this->calcWidth + this->calcPosx;
-	this->vertices[9] = -this->calcHeight + this->calcPosy;
-	this->vertices[16] = -this->calcWidth + this->calcPosx;
-	this->vertices[17] = -this->calcHeight + this->calcPosy;
-	this->vertices[24] = -this->calcWidth + this->calcPosx;
-	this->vertices[25] = this->calcHeight + this->calcPosy;
+	this->updateVertices();
 }
 
 Render::Vector2::Vector2(int x, int y) {
@@ -241,6 +288,12 @@ void Render::Sprite::checkChanges() {
 		this->texture->repos(this->position.x, this->position.y);
 		this->oldPosition.x = this->position.x;
 		this->oldPosition.y = this->position.y;
+	}
+
+	if (this->rotation != this->oldRotation) {
+		texture->updateVertices();
+
+		oldRotation = rotation;
 	}
 }
 Render::Vector2::Vector2() {

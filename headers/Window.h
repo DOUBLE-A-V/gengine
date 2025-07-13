@@ -7,4 +7,5 @@ public:
 	static int init(const char* title, int width, int height);
 	static void mainloop();
 	static void terminate();
+	static void processInput(GLFWwindow* window);
 };

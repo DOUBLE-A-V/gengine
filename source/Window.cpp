@@ -43,6 +43,9 @@ void Window::mainloop() {
 	while (!glfwWindowShouldClose(Window::window))
 	{
 		Render::renderFrame();
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+			Render::sprites[0]->rotation += 0.1f;
+		}
 	}
 }
 

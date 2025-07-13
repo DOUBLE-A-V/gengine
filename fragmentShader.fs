@@ -10,10 +10,11 @@ uniform float alpha;
 uniform float red;
 uniform float green;
 uniform float blue;
+uniform float rotation;
 
 void main()
 {
-	FragColor = texture(texture1, TexCoord);
+    FragColor = vec4(vec3(texture(texture1, TexCoord)), 1.0);
 	FragColor.a *= alpha;
 	FragColor.r *= red;
 	FragColor.g *= green;

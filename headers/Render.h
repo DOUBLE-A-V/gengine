@@ -6,6 +6,7 @@
 #include <Vector3.h>
 #include <iostream>
 #include <vector>
+#include <string>
 
 using uint = unsigned int;
 using namespace std;
@@ -33,10 +34,13 @@ public:
 		float green;
 		float blue;
 
+		float rotation;
+
 		Texture(uint id, vector<float> vertices, int width, int height, size_t verticesSize);
 		void resize(int newWidth, int newHeight);
 		void repos(int newx, int newy);
 		void setFilter(int filter);
+		void updateVertices();
 	};
 	class Vector3 {
 	public:
@@ -51,11 +55,14 @@ public:
 		Vector2();
 		Vector2(int x, int y);
 		Vector2(float x, float y);
+
+		operator string();
 	};
 
 	class Sprite {
 	public:
 		Vector2 position;
+		float rotation = 0;
 		void resize(int newWidth, int newHeight);
 		Vector2 getSize();
 		Render::Texture* texture;
@@ -64,6 +71,7 @@ public:
 	private:
 		Vector2 size;
 		Vector2 oldPosition;
+		float oldRotation;
 	};
 
 	static uint texture;
@@ -80,6 +88,8 @@ public:
 	static int init(GLFWwindow* renderWindow);
 	static void terminate();
 	static void renderFrame();
+
+	static Vector2 calcPointRotation(float rotation, Vector2 pos, Vector2 axisPos);
 
 	static Render::Texture* loadTexture(const char* path);
 private:
