@@ -19,10 +19,13 @@ uint Render::indices[] = {
 };
 
 vector<Render::Sprite*> Render::sprites;
+vector<Render::Font*> Render::fonts;
+vector<Render::Text*> Render::texts;
 
 int Render::windowWidth, Render::windowHeight;
 
 float lastTime = 0.0f;
+float Render::fps = 0;
 
 int Render::init(GLFWwindow* renderWindow) {
 	Render::window = renderWindow;
@@ -61,11 +64,11 @@ int Render::init(GLFWwindow* renderWindow) {
 
 void Render::terminate() {
 	for (Render::Sprite* sprite : Render::sprites) {
-		delete& (sprite->texture->vertices);
 		delete sprite->texture;
 		delete sprite;
 	}
-	delete &Render::sprites;
+	delete Render::ourShader;
+	
 	glDeleteVertexArrays(1, &Render::VAO);
 	glDeleteBuffers(1, &Render::VBO);
 	glDeleteBuffers(1, &Render::EBO);
@@ -83,8 +86,6 @@ void Render::renderFrame() {
 		Render::ourShader->setFloat("red", sprite->texture->red);
 		Render::ourShader->setFloat("green", sprite->texture->green);
 		Render::ourShader->setFloat("blue", sprite->texture->blue);
-		Render::ourShader->setFloat("rotation", sprite->rotation);
-		
 
 		glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
 		glBufferData(GL_ARRAY_BUFFER, sprite->texture->verticesSize, sprite->texture->vertices.data(), GL_STATIC_DRAW);
@@ -93,10 +94,28 @@ void Render::renderFrame() {
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
+	for (Text* text : Render::texts) {
+		text->checkChanges();
+		int count = 0;
+		for (uint texture : text->charsTextures) {
+			Render::ourShader->setFloat("alpha", text->alpha);
+			Render::ourShader->setFloat("red", text->red);
+			Render::ourShader->setFloat("green", text->green);
+			Render::ourShader->setFloat("blue", text->blue);
+
+			glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
+			glBufferData(GL_ARRAY_BUFFER, 128, text->calcVerticesForChar(count).data(), GL_STATIC_DRAW);
+
+			glBindTexture(GL_TEXTURE_2D, texture);
+			glBindVertexArray(VAO);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			count++;
+		}
+	}
 	float currentTime = glfwGetTime();
 	float deltaTime = currentTime - lastTime;
 	lastTime = currentTime;
-	//std::cout << "FPS: " << (1 / deltaTime) << "/" << deltaTime << std::endl;
+	fps = (1 / deltaTime);
 
 	glfwSwapBuffers(Render::window);
 	glfwPollEvents();
@@ -147,13 +166,23 @@ Render::Texture* Render::loadTexture(const char* path) {
 	Texture* textureObject = new Texture(texture, vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), width, height, sizeof(vertices));
 	return textureObject;
 }
-Render::Vector2 Render::calcPointRotation(float rotation, Vector2 pos, Vector2 axisPos) {
-	Vector2 newPos;
-	float s = sin(rotation);
-	float c = cos(rotation);
-	newPos.x = axisPos.x * c - (pos.y - axisPos.y) * s + axisPos.x;
-	newPos.y = (pos.x - axisPos.x) * s - (pos.y - axisPos.y) * c + axisPos.y;
-	return newPos;
+
+uint Render::createTextureFromData(unsigned char* data, uint width, uint height) {
+	uint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// load image, create texture and generate mipmaps
+	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	return texture;
 }
 Render::Vector2::operator string() {
 	return "Vector2(" + to_string(x) + ", " + to_string(y) + ")";
@@ -176,8 +205,8 @@ void Render::Texture::updateVertices() {
 	float width = this->width;
 	float height = this->height;
 
-	float s = sin(rotation);
-	float c = cos(rotation);
+	float s = sin(-rotation);
+	float c = cos(-rotation);
 
 	vertices[0] = (center.x + ((width / 2) * c) - ((height / 2) * s)) / windowWidth;
 	vertices[1] = (center.y + ((width / 2) * s) + ((height / 2) * c)) / windowHeight;
@@ -277,7 +306,7 @@ void Render::Sprite::checkChanges() {
 	}
 
 	if (this->rotation != this->oldRotation) {
-		texture->rotation = -rotation;
+		texture->rotation = this->rotation;
 		texture->updateVertices();
 
 		oldRotation = rotation;
@@ -286,4 +315,195 @@ void Render::Sprite::checkChanges() {
 Render::Vector2::Vector2() {
 	this->x = 0;
 	this->y = 0;
+}
+
+Render::Character* Render::Font::getChar(int code) {
+	for (Character* ch : this->chars) {
+		if (ch->charCode == code) {
+			return ch;
+		}
+	}
+}
+
+Render::Font* Render::loadFont(string path, string loadAsName) {
+	Font* font = new Font();
+	font->name = loadAsName;
+	ifstream f(path, ios::binary);
+	char byte;
+	vector<unsigned char> data;
+	while (f.get(byte)) {
+		data.push_back(byte);
+	}
+	f.close();
+
+	if (data[0] == 68 && data[1] == 65 && data[2] == 86 && data[3] == 70) {
+		unsigned int count = 0;
+		int readingCharCode = 0;
+		bool readingWidth = false, readingHeight = false, readingImageData = false;
+		unsigned int count2 = 0;
+		uint width = 0, height = 0;
+		unsigned int charCodeByte1 = 0;
+		unsigned int charCodeByte2 = 0;
+		Character* tmpChar;
+		vector<unsigned char> imageData;
+		for (unsigned char byte : data) {
+			if (count > 3) {
+				if (count2 == 0 && readingImageData) {
+					readingImageData = false;
+					string strByte2 = to_string((uint)charCodeByte2);
+					if (strByte2.size() == 1) {
+						strByte2 = "0" + strByte2;
+					}
+					tmpChar = new Character(createTextureFromData(imageData.data(), width, height), width, height, stoi(to_string((uint)charCodeByte1) + strByte2));
+					font->chars.push_back(tmpChar);
+					imageData.clear();
+				}
+				if (count2 != 0) {
+					imageData.push_back(byte);
+					count2--;
+				}
+				if (!readingImageData) {
+					if (readingCharCode == 1) {
+						readingCharCode = 2;
+						charCodeByte2 = byte;
+					}
+					if (readingCharCode == 2) {
+						readingCharCode = 0;
+						readingWidth = true;
+					}
+					else if (readingWidth) {
+						width = byte;
+						readingWidth = false;
+						readingHeight = true;
+					}
+					else if (readingHeight) {
+						height = byte;
+						readingHeight = false;
+						readingImageData = true;
+						count2 = width * height * 4;
+					}
+				}
+				if (readingCharCode == 0 && !readingWidth && !readingHeight && !readingImageData) {
+					readingCharCode = 1;
+					if (count != data.size() - 1) {
+					}
+					charCodeByte1 = byte;
+				}
+			}
+			count++;
+		}
+		string strByte2 = to_string((uint)charCodeByte2);
+		if (strByte2.size() == 1) {
+			strByte2 = "0" + strByte2;
+		}
+		tmpChar = new Character(createTextureFromData(imageData.data(), width, height), width, height, stoi(to_string((uint)charCodeByte1) + strByte2));
+		font->chars.push_back(tmpChar);
+		fonts.push_back(font);
+		return font;
+	}
+	else {
+		cout << "it is not a DAVF file: " << path << endl;
+	}
+	return 0;
+}
+
+Render::Text::Text(string text_) {
+	this->text = text_;
+	this->oldText = text;
+	this->size = 1;
+	this->oldSize = 1;
+
+	this->alpha = 1;
+	this->red = 1;
+	this->green = 1;
+	this->blue = 1;
+
+	Font* font = fonts[0];
+
+	this->oldFont = font;
+	this->font = font;
+
+	for (char ch : text) {
+		bool found = false;
+		for (Character* fontChar : font->chars) {
+			if (fontChar->charCode == ch) {
+				this->charsTextures.push_back(fontChar->texture);
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			this->charsTextures.push_back(font->getChar(0)->texture);
+		}
+	}
+}
+
+void Render::Text::checkChanges() {
+	if (position.x != oldPosition.x || position.y != oldPosition.y || text != oldText || size != oldSize) {
+		if (text != oldText) {
+			this->oldText = text;
+			charsTextures.clear();
+			for (char ch : text) {
+				bool found = false;
+				for (Character* fontChar : font->chars) {
+					if (fontChar->charCode == ch) {
+						this->charsTextures.push_back(fontChar->texture);
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					this->charsTextures.push_back(font->getChar(0)->texture);
+				}
+			}
+		}
+		this->updateVertices();
+	}
+}
+void Render::Text::updateVertices() {
+	float calcWidth = ((float)32 * size / 2) / (windowWidth / 2);
+	float calcHeight = ((float)32 * size / 2) / (windowHeight / 2);
+	float calcPosx = (float)position.x / windowWidth / 2;
+	float calcPosy = (float)position.y / windowHeight / 2;
+
+	vertices[0] = calcWidth + calcPosx;
+	vertices[1] = calcHeight + calcPosy;
+	vertices[8] = calcWidth + calcPosx;
+	vertices[9] = -calcHeight + calcPosy;
+	vertices[16] = -calcWidth + calcPosx;
+	vertices[17] = -calcHeight + calcPosy;
+	vertices[24] = -calcWidth + calcPosx;
+	vertices[25] = calcHeight + calcPosy;
+
+	charPosChange.x = (charDistance * size) / (windowHeight / 2);
+}
+
+vector<float> Render::Text::calcVerticesForChar(int num) {
+	vector<float> calced;
+	for (float el : vertices) {
+		calced.push_back(el);
+	}
+	Vector2 posChange = Vector2(charPosChange.x * num, charPosChange.y * num);
+
+	calced[0] += posChange.x;
+	calced[1] += posChange.y;
+	calced[8] += posChange.x;
+	calced[9] += posChange.y;
+	calced[16] += posChange.x;
+	calced[17] += posChange.y;
+	calced[24] += posChange.x;
+	calced[25] += posChange.y;
+
+	return calced;
+}
+
+Render::Text* Render::createText(string text, int posx, int posy) {
+	Text* textObj = new Text(text);
+	textObj->position.x = posx;
+	textObj->position.y = posy;
+	textObj->updateVertices();
+
+	texts.push_back(textObj);
+
+	return textObj;
 }

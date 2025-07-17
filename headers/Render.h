@@ -6,7 +6,11 @@
 #include <Vector3.h>
 #include <iostream>
 #include <vector>
+#include <map>
 #include <string>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using uint = unsigned int;
 using namespace std;
@@ -42,6 +46,24 @@ public:
 		void setFilter(int filter);
 		void updateVertices();
 	};
+	class Character {
+	public:
+		uint texture;
+		uint width, height;
+		uint charCode;
+		Character(uint textureID, uint iwidth, uint iheight, uint icharCode) {
+			this->texture = textureID;
+			this->width = iwidth;
+			this->height = iheight;
+			this->charCode = icharCode;
+		};
+	};
+	class Font {
+	public:
+		vector<Character*> chars;
+		Character* getChar(int code);
+		string name;
+	};
 	class Vector3 {
 	public:
 		float x;
@@ -73,6 +95,39 @@ public:
 		Vector2 oldPosition;
 		float oldRotation;
 	};
+	class Text {
+	public:
+		Vector2 position;
+		vector<uint> charsTextures;
+		string text = "";
+		Font* font;
+		float size = 32;
+		float charDistance = 18;
+		vector<float> vertices = {
+			0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+			0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+			-0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+			-0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f
+		};
+
+		float alpha, red, green, blue;
+
+		void setFont(string fontName);
+		void setFont(Font* font);
+
+		void checkChanges();
+
+		vector<float> calcVerticesForChar(int num);
+
+		Text(string text_);
+		void updateVertices();
+	private:
+		Vector2 oldPosition = Vector2(0, 0);
+		string oldText = "";
+		Font* oldFont;
+		float oldSize = 1;
+		Vector2 charPosChange;
+	};
 
 	static uint texture;
 	static float vertices[];
@@ -81,6 +136,8 @@ public:
 	static uint VAO;
 	static uint EBO;
 	static vector<Sprite*> sprites;
+	static vector<Font*> fonts;
+	static vector<Text*> texts;
 
 	static int windowWidth;
 	static int windowHeight;
@@ -89,11 +146,14 @@ public:
 	static void terminate();
 	static void renderFrame();
 
-	static Vector2 calcPointRotation(float rotation, Vector2 pos, Vector2 axisPos);
-
 	static void updateAllVertices();
+	static Render::Font* loadFont(string path, string loadAsName);
+	static float fps;
 
 	static Render::Texture* loadTexture(const char* path);
+	static uint createTextureFromData(unsigned char* data, uint width, uint height);
+
+	static Text* createText(string text, int posx, int posy);
 private:
 	static GLFWwindow* window;
 	static Shader* ourShader;

@@ -47,6 +47,7 @@ void Window::mainloop() {
 			Render::sprites[0]->rotation += 0.1f;
 		}
 	}
+	Render::terminate();
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
