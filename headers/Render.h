@@ -103,6 +103,8 @@ public:
 		Font* font;
 		float size = 32;
 		float charDistance = 18;
+		float rotation = 0;
+
 		vector<float> vertices = {
 			0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
 			0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
@@ -122,6 +124,7 @@ public:
 		Text(string text_);
 		void updateVertices();
 	private:
+		float oldRotation = 0;
 		Vector2 oldPosition = Vector2(0, 0);
 		string oldText = "";
 		Font* oldFont;

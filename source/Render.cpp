@@ -27,6 +27,9 @@ int Render::windowWidth, Render::windowHeight;
 float lastTime = 0.0f;
 float Render::fps = 0;
 
+const double pi = acos(-1);
+const double radian = pi / 180.0;
+
 int Render::init(GLFWwindow* renderWindow) {
 	Render::window = renderWindow;
 
@@ -205,8 +208,8 @@ void Render::Texture::updateVertices() {
 	float width = this->width;
 	float height = this->height;
 
-	float s = sin(-rotation);
-	float c = cos(-rotation);
+	float s = sin(-rotation * radian);
+	float c = cos(-rotation * radian);
 
 	vertices[0] = (center.x + ((width / 2) * c) - ((height / 2) * s)) / windowWidth;
 	vertices[1] = (center.y + ((width / 2) * s) + ((height / 2) * c)) / windowHeight;
@@ -439,7 +442,7 @@ Render::Text::Text(string text_) {
 }
 
 void Render::Text::checkChanges() {
-	if (position.x != oldPosition.x || position.y != oldPosition.y || text != oldText || size != oldSize) {
+	if (position.x != oldPosition.x || position.y != oldPosition.y || text != oldText || size != oldSize || oldRotation != rotation) {
 		if (text != oldText) {
 			this->oldText = text;
 			charsTextures.clear();
@@ -457,6 +460,13 @@ void Render::Text::checkChanges() {
 				}
 			}
 		}
+		this->oldPosition.x = this->position.x;
+		this->oldPosition.y = this->position.y;
+
+		this->oldSize = this->size;
+
+		this->oldRotation = rotation;
+
 		this->updateVertices();
 	}
 }
@@ -475,7 +485,28 @@ void Render::Text::updateVertices() {
 	vertices[24] = -calcWidth + calcPosx;
 	vertices[25] = calcHeight + calcPosy;
 
-	charPosChange.x = (charDistance * size) / (windowHeight / 2);
+	Vector2 center = this->position;
+
+	float width = 32 * size / 2;
+	float height = 32 * size / 2;
+
+	float s = sin(-rotation * radian);
+	float c = cos(-rotation * radian);
+
+	vertices[0] = (center.x + ((width / 2) * c) - ((height / 2) * s)) / windowWidth;
+	vertices[1] = (center.y + ((width / 2) * s) + ((height / 2) * c)) / windowHeight;
+
+	vertices[8] = (center.x + ((width / 2) * c) + ((height / 2) * s)) / windowWidth;
+	vertices[9] = (center.y + ((width / 2) * s) - ((height / 2) * c)) / windowHeight;
+
+	vertices[16] = (center.x - ((width / 2) * c) + ((height / 2) * s)) / windowWidth;
+	vertices[17] = (center.y - ((width / 2) * s) - ((height / 2) * c)) / windowHeight;
+
+	vertices[24] = (center.x - ((width / 2) * c) - ((height / 2) * s)) / windowWidth;
+	vertices[25] = (center.y - ((width / 2) * s) + ((height / 2) * c)) / windowHeight;
+
+	charPosChange.x = (charDistance * size) / (windowHeight / 2) * c;
+	charPosChange.y = (charDistance * size) / (windowHeight / 2) * s;
 }
 
 vector<float> Render::Text::calcVerticesForChar(int num) {
