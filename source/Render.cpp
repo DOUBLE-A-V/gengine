@@ -100,18 +100,28 @@ void Render::renderFrame() {
 	for (Text* text : Render::texts) {
 		text->checkChanges();
 		int count = 0;
+		int charnum = 0;
+		int line = 0;
+		string text_string = text->text;
 		for (uint texture : text->charsTextures) {
-			Render::ourShader->setFloat("alpha", text->alpha);
-			Render::ourShader->setFloat("red", text->red);
-			Render::ourShader->setFloat("green", text->green);
-			Render::ourShader->setFloat("blue", text->blue);
+			if (text_string[count] == '\n') {
+				line++;
+				charnum = -1;
+			}
+			else {
+				Render::ourShader->setFloat("alpha", text->alpha);
+				Render::ourShader->setFloat("red", text->red);
+				Render::ourShader->setFloat("green", text->green);
+				Render::ourShader->setFloat("blue", text->blue);
 
-			glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
-			glBufferData(GL_ARRAY_BUFFER, 128, text->calcVerticesForChar(count).data(), GL_STATIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
+				glBufferData(GL_ARRAY_BUFFER, 128, text->calcVerticesForChar(charnum, line).data(), GL_STATIC_DRAW);
 
-			glBindTexture(GL_TEXTURE_2D, texture);
-			glBindVertexArray(VAO);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+				glBindTexture(GL_TEXTURE_2D, texture);
+				glBindVertexArray(VAO);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			}
+			charnum++;
 			count++;
 		}
 	}
@@ -130,7 +140,8 @@ Render::Texture* Render::loadTexture(const char* path) {
 	// set the texture wrapping parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
+	// set t
+	// texture filtering parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// load image, create texture and generate mipmaps
@@ -230,6 +241,9 @@ void Render::Texture::updateVertices() {
 void Render::updateAllVertices() {
 	for (Sprite* sprite : Render::sprites) {
 		sprite->texture->updateVertices();
+	}
+	for (Text* text : Render::texts) {
+		text->updateVertices();
 	}
 }
 
@@ -505,16 +519,19 @@ void Render::Text::updateVertices() {
 	vertices[24] = (center.x - ((width / 2) * c) - ((height / 2) * s)) / windowWidth;
 	vertices[25] = (center.y - ((width / 2) * s) + ((height / 2) * c)) / windowHeight;
 
-	charPosChange.x = (charDistance * size) / (windowHeight / 2) * c;
+	charPosChange.x = (charDistance * size) / (windowWidth / 2) * c;
 	charPosChange.y = (charDistance * size) / (windowHeight / 2) * s;
+
+	linePosChange.x = (lineDistance * size) / (windowWidth / 2) * s;
+	linePosChange.y = (lineDistance * size) / (windowHeight / 2) * c;
 }
 
-vector<float> Render::Text::calcVerticesForChar(int num) {
+vector<float> Render::Text::calcVerticesForChar(int num, int line) {
 	vector<float> calced;
 	for (float el : vertices) {
 		calced.push_back(el);
 	}
-	Vector2 posChange = Vector2(charPosChange.x * num, charPosChange.y * num);
+	Vector2 posChange = Vector2((charPosChange.x * num) + linePosChange.x * line, (charPosChange.y * num) - linePosChange.y * line);
 
 	calced[0] += posChange.x;
 	calced[1] += posChange.y;

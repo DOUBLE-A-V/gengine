@@ -20,7 +20,7 @@ int main() {
 	sprite->rotation = 0;
 	sprite->texture->alpha = 0;
 	Render::loadFont("D:/font/font.davf", "default");
-	Render::Text* text = Render::createText("fuck you", 100, 100);
+	Render::Text* text = Render::createText("abcdefg\nabc\ndef", 100, 100);
 	text->charDistance = 8;
 	text->size = 3;
 	text->rotation = 0;

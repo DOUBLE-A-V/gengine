@@ -102,7 +102,8 @@ public:
 		string text = "";
 		Font* font;
 		float size = 32;
-		float charDistance = 18;
+		float charDistance = 8;
+		float lineDistance = 8;
 		float rotation = 0;
 
 		vector<float> vertices = {
@@ -119,7 +120,7 @@ public:
 
 		void checkChanges();
 
-		vector<float> calcVerticesForChar(int num);
+		vector<float> calcVerticesForChar(int num, int line);
 
 		Text(string text_);
 		void updateVertices();
@@ -130,6 +131,7 @@ public:
 		Font* oldFont;
 		float oldSize = 1;
 		Vector2 charPosChange;
+		Vector2 linePosChange;
 	};
 
 	static uint texture;
