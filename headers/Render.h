@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include <shader_s.h>
-#include <Vector3.h>
+#include <Vector2.h>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -45,6 +45,11 @@ public:
 		void repos(int newx, int newy);
 		void setFilter(int filter);
 		void updateVertices();
+		~Texture() {
+			uint textures[1];
+			textures[0] = texture;
+			glDeleteTextures(1, textures);
+		}
 	};
 	class Character {
 	public:
@@ -57,11 +62,29 @@ public:
 			this->height = iheight;
 			this->charCode = icharCode;
 		};
+		~Character() {
+			uint textures[1];
+			textures[0] = texture;
+			glDeleteTextures(1, textures);
+		}
 	};
 	class Font {
 	public:
 		vector<Character*> chars;
 		Character* getChar(int code);
+		~Font() {
+			for (Character* ch : chars) {
+				delete ch;
+			}
+			int count = 0;
+			for (Font* font : fonts) {
+				if (font == this) {
+					fonts.erase(fonts.begin() + count);
+					break;
+				}
+				count++;
+			}
+		}
 		string name;
 	};
 	class Vector3 {
@@ -70,16 +93,6 @@ public:
 		float y;
 		float z;
 	};
-	class Vector2 {
-	public:
-		float x;
-		float y;
-		Vector2();
-		Vector2(int x, int y);
-		Vector2(float x, float y);
-
-		operator string();
-	};
 
 	class Sprite {
 	public:
@@ -87,13 +100,26 @@ public:
 		float rotation = 0;
 		void resize(int newWidth, int newHeight);
 		Vector2 getSize();
-		Render::Texture* texture;
+		Render::Texture* texture = NULL;
 		Sprite(const char* path) { this->texture = Render::loadTexture(path); };
+		Sprite() { this->position = Vector2(0, 0); this->texture = NULL;};
 		void checkChanges();
+		~Sprite() {
+			int count = 0;
+			for (Sprite* sprite : sprites) {
+				if (sprite == this) {
+					sprites.erase(sprites.begin() + count);
+					break;
+				}
+				count++;
+			}
+			delete texture;
+		}
+		void setTexture(Texture* texture);
 	private:
 		Vector2 size;
 		Vector2 oldPosition;
-		float oldRotation;
+		float oldRotation = 0;
 	};
 	class Text {
 	public:
@@ -124,6 +150,17 @@ public:
 
 		Text(string text_);
 		void updateVertices();
+		~Text() {
+			int count = 0;
+			for (Text* text : texts) {
+				if (text == this) {
+					texts.erase(texts.begin() + count);
+					break;
+				}
+				count++;
+			}
+			delete font;
+		}
 	private:
 		float oldRotation = 0;
 		Vector2 oldPosition = Vector2(0, 0);

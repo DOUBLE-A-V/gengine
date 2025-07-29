@@ -1,10 +1,13 @@
 #include "Render.h"
+#include <Logger.hpp>
+#include <Vector2.h>
 
 uint Render::VBO, Render::VAO, Render::EBO;
 GLFWwindow* Render::window;
 
 Shader* Render::ourShader;
 uint Render::texture;
+
 
 float Render::vertices[] = {
 	// positions          // colors           // texture coords
@@ -29,6 +32,8 @@ float Render::fps = 0;
 
 const double pi = acos(-1);
 const double radian = pi / 180.0;
+
+bool first = false;
 
 int Render::init(GLFWwindow* renderWindow) {
 	Render::window = renderWindow;
@@ -67,8 +72,10 @@ int Render::init(GLFWwindow* renderWindow) {
 
 void Render::terminate() {
 	for (Render::Sprite* sprite : Render::sprites) {
-		delete sprite->texture;
 		delete sprite;
+	}
+	for (Render::Text* text : Render::texts) {
+		delete text;
 	}
 	delete Render::ourShader;
 	
@@ -83,19 +90,20 @@ void Render::renderFrame() {
 
 	Render::ourShader->use();
 	for (Sprite* sprite : Render::sprites) {
-		sprite->checkChanges();
+		if (sprite->texture) {
+			sprite->checkChanges();
+			Render::ourShader->setFloat("alpha", sprite->texture->alpha);
+			Render::ourShader->setFloat("red", sprite->texture->red);
+			Render::ourShader->setFloat("green", sprite->texture->green);
+			Render::ourShader->setFloat("blue", sprite->texture->blue);
 
-		Render::ourShader->setFloat("alpha", sprite->texture->alpha);
-		Render::ourShader->setFloat("red", sprite->texture->red);
-		Render::ourShader->setFloat("green", sprite->texture->green);
-		Render::ourShader->setFloat("blue", sprite->texture->blue);
+			glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
+			glBufferData(GL_ARRAY_BUFFER, 128, sprite->texture->vertices.data(), GL_STATIC_DRAW);
 
-		glBindBuffer(GL_ARRAY_BUFFER, Render::VBO);
-		glBufferData(GL_ARRAY_BUFFER, sprite->texture->verticesSize, sprite->texture->vertices.data(), GL_STATIC_DRAW);
-
-		glBindTexture(GL_TEXTURE_2D, sprite->texture->texture);
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			glBindTexture(GL_TEXTURE_2D, sprite->texture->texture);
+			glBindVertexArray(VAO);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}
 	}
 	for (Text* text : Render::texts) {
 		text->checkChanges();
@@ -161,7 +169,7 @@ Render::Texture* Render::loadTexture(const char* path) {
 	}
 	else
 	{
-		std::cout << "Failed to load texture" << std::endl;
+		Logger::error("Failed to load texture", "Render::loadTexture");
 	}
 	stbi_image_free(data);
 
@@ -198,8 +206,9 @@ uint Render::createTextureFromData(unsigned char* data, uint width, uint height)
 
 	return texture;
 }
-Render::Vector2::operator string() {
-	return "Vector2(" + to_string(x) + ", " + to_string(y) + ")";
+void Render::Sprite::setTexture(Texture* texture) {
+	this->texture = texture;
+	this->resize(texture->width, texture->height);
 }
 void Render::Texture::updateVertices() {
 	vertices[0] = calcWidth + calcPosx;
@@ -212,9 +221,6 @@ void Render::Texture::updateVertices() {
 	vertices[25] = calcHeight + calcPosy;
 
 	Vector2 center = Vector2(this->posx, this->posy);
-
-	center.x = center.x * windowWidth;
-	center.y = center.y * windowHeight;
 
 	float width = this->width;
 	float height = this->height;
@@ -296,15 +302,6 @@ void Render::Texture::repos(int newx, int newy) {
 	this->updateVertices();
 }
 
-Render::Vector2::Vector2(int x, int y) {
-	this->x = (float)x;
-	this->y = (float)y;
-}
-Render::Vector2::Vector2(float x, float y) {
-	this->x = x;
-	this->y = y;
-}
-
 void Render::Sprite::resize(int newWidth, int newHeight) {
 	if (newWidth != this->size.x || newHeight != this->size.y) {
 		this->texture->resize(newWidth, newHeight);
@@ -312,7 +309,7 @@ void Render::Sprite::resize(int newWidth, int newHeight) {
 	this->size.x = newWidth;
 	this->size.y = newHeight;
 }
-Render::Vector2 Render::Sprite::getSize() {
+Vector2 Render::Sprite::getSize() {
 	return this->size;
 }
 void Render::Sprite::checkChanges() {
@@ -328,10 +325,6 @@ void Render::Sprite::checkChanges() {
 
 		oldRotation = rotation;
 	}
-}
-Render::Vector2::Vector2() {
-	this->x = 0;
-	this->y = 0;
 }
 
 Render::Character* Render::Font::getChar(int code) {
@@ -419,11 +412,42 @@ Render::Font* Render::loadFont(string path, string loadAsName) {
 		return font;
 	}
 	else {
-		cout << "it is not a DAVF file: " << path << endl;
+		Logger::error("it is not a DAVF file: " + path, "Render::loadFont");
 	}
 	return 0;
 }
 
+void Render::Text::setFont(string fontName) {
+	bool found = false;
+	for (Font* _font : fonts) {
+		if (_font->name == fontName) {
+			font = _font;
+			found = true;
+			break;
+		}
+	}
+	if (found) {
+		this->oldFont = font;
+		this->font = font;
+
+		for (char ch : text) {
+			bool found = false;
+			for (Character* fontChar : font->chars) {
+				if (fontChar->charCode == ch) {
+					this->charsTextures.push_back(fontChar->texture);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				this->charsTextures.push_back(font->getChar(0)->texture);
+			}
+		}
+	}
+	else {
+		Logger::error("font \"" + fontName + "\" does not exists in loaded fonts", "Render::Text::SetFont");
+	}
+}
 Render::Text::Text(string text_) {
 	this->text = text_;
 	this->oldText = text;

@@ -1,5 +1,5 @@
 #pragma once
-#include <render.h>
+#include <Render.h>
 class Window
 {
 public:
