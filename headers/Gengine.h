@@ -36,10 +36,10 @@ public:
 		void addModifier(string name);
 		void* getModifier(string name);
 		template<typename T>
-		T* getModifier(string name) {
+		T getModifier(string name) {
 			for (Modifier* modifier : this->modifiers) {
 				if (modifier->name == name) {
-					return static_cast<T*>(modifier->modifierClassPtr);
+					return static_cast<T>(modifier->modifierClassPtr);
 				}
 			}
 		}
@@ -55,6 +55,10 @@ public:
 	static vector<Object*> findObjects(string name, bool recursive = false);
 
 	static void* createModifierClass(string name);
+	template<typename T>
+	static T createModifierClass(string name) {
+		return static_cast<T>(createModifierClass(name));
+	}
 	static Sprite* createSprite(string texturePath);
 	static Sprite* createSprite();
 	static Sprite* createSprite(string texturePath, Vector2 pos);
@@ -67,6 +71,7 @@ public:
 	static string getCurrentDir();
 
 	static Texture* loadTexture(const char* path);
+	static Texture* loadTexture(string path);
 
 	static vector<Object*> objects;
 };

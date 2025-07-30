@@ -1,16 +1,19 @@
 #include <iostream>
 
 #include <Gengine.h>
+#include <GengineDevelopment.hpp>
 
 using namespace std;
-using GE = Gengine;
+using namespace GengineDevelopment;
 
 int main() {
 	Window::init("fuck niggers 2", 800, 600);
 	Render::loadFont("D:/font/font.davf", "default");
-	GE::Object* image = GE::createObject("some image", GE::ObjectType::Sprite);
+	Object image = createObject("some image", ObjectType::Sprite);
 	
-	GE::Sprite* sprite = image->getModifier<GE::Sprite>("Sprite");
+	Sprite sprite = image->getModifier<Sprite>("Sprite");
+	sprite->setTexture(loadTexture("D:/daun.png"));
+
 
 	Render::Text* text = Render::createText("abcdefg\nabc\ndef", 100, 100);
 	text->size = 3;

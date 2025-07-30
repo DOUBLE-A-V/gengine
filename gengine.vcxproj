@@ -30,6 +30,7 @@
   <ItemGroup>
     <ClInclude Include="headers\CustomModifiers.hpp" />
     <ClInclude Include="headers\Gengine.h" />
+    <ClInclude Include="headers\GengineDevelopment.hpp" />
     <ClInclude Include="headers\Logger.hpp" />
     <ClInclude Include="include\freetype\config\ftconfig.h" />
     <ClInclude Include="include\freetype\config\ftheader.h" />

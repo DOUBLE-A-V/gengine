@@ -353,6 +353,9 @@
     <ClInclude Include="headers\CustomModifiers.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="headers\GengineDevelopment.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="include\root_directory.h.in" />

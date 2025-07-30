@@ -1,28 +1,27 @@
 #include <Gengine.h>
 
-using GE = Gengine;
-
 Gengine::ObjectPreset Gengine::ObjectType::Object = ObjectPreset("Object", "");
 Gengine::ObjectPreset Gengine::ObjectType::Sprite = ObjectPreset("Sprite", "sprite");
 Gengine::ObjectPreset Gengine::ObjectType::Text = ObjectPreset("Text", "text");
 
-vector<GE::Object*>GE::objects;
-
-GE::Sprite* Gengine::createSprite(string texturePath) {
+vector<Gengine::Object*>Gengine::objects;
+Gengine::Sprite* Gengine::createSprite(string texturePath) {
 	Sprite* sprite = new Sprite(texturePath.c_str());
 	sprite->position = Vector2(0, 0);
 	sprite->resize(sprite->texture->width, sprite->texture->height);
 	Render::sprites.push_back(sprite);
 	return sprite;
 }
-GE::Sprite* Gengine::createSprite(string texturePath, Vector2 pos) {
+
+Gengine::Sprite* Gengine::createSprite(string texturePath, Vector2 pos) {
 	Sprite* sprite = new Sprite(texturePath.c_str());
 	sprite->position = Vector2(pos.x, pos.y);
 	sprite->resize(sprite->texture->width, sprite->texture->height);
 	Render::sprites.push_back(sprite);
 	return sprite;
 }
-GE::Sprite* Gengine::createSprite() {
+
+Gengine::Sprite* Gengine::createSprite() {
 	Sprite* sprite = new Sprite();
 	sprite->position = Vector2(0, 0);
 	Render::sprites.push_back(sprite);
@@ -78,11 +77,11 @@ Gengine::ObjectPreset::ObjectPreset(string name, string modifiers) {
 	this->name = name;
 }
 
-GE::Text* Gengine::createText(string text) {
+Gengine::Text* Gengine::createText(string text) {
 	Text* textObj = Render::createText(text, 0, 0);
 	return textObj;
 }
-GE::Text* Gengine::createText(string text, Vector2 pos) {
+Gengine::Text* Gengine::createText(string text, Vector2 pos) {
 	Text* textObj = Render::createText(text, pos.x, pos.y);
 	return textObj;
 }
@@ -97,10 +96,11 @@ string Gengine::getCurrentDir() {
 
 	return result;
 }
-
-
-GE::Texture* Gengine::loadTexture(const char* path) {
+Gengine::Texture* Gengine::loadTexture(const char* path) {
 	return Render::loadTexture(path);
+}
+Gengine::Texture* Gengine::loadTexture(string path) {
+	return Render::loadTexture(path.c_str());
 }
 
 Gengine::Object* Gengine::createObject(string name, ObjectPreset type) {
@@ -108,7 +108,7 @@ Gengine::Object* Gengine::createObject(string name, ObjectPreset type) {
 	objects.push_back(obj);
 	return obj;
 }
-bool GE::Object::hasModifier(string name) {
+bool Gengine::Object::hasModifier(string name) {
 	for (Modifier* modifier : this->modifiers) {
 		if (modifier->name == name) {
 			return true;
@@ -117,26 +117,26 @@ bool GE::Object::hasModifier(string name) {
 	return false;
 }
 
-GE::Sprite* GE::Object::getSpriteModifier() {
+Gengine::Sprite* Gengine::Object::getSpriteModifier() {
 	for (Modifier* modifier : this->modifiers) {
 		if (modifier->name == "Sprite") {
-			return static_cast<GE::Sprite*>(modifier->modifierClassPtr);
+			return static_cast<Gengine::Sprite*>(modifier->modifierClassPtr);
 		}
 	}
 	return NULL;
 }
-GE::Text* GE::Object::getTextModifier() {
+Gengine::Text* Gengine::Object::getTextModifier() {
 	for (Modifier* modifier : this->modifiers) {
 		if (modifier->name == "Text") {
-			return static_cast<GE::Text*>(modifier->modifierClassPtr);
+			return static_cast<Gengine::Text*>(modifier->modifierClassPtr);
 		}
 	}
 	return NULL;
 }
 
-vector<GE::Object*> GE::findObjects(string name, bool recursive = false) {
-	vector<GE::Object*> list;
-	for (GE::Object* object : GE::objects) {
+vector<Gengine::Object*> Gengine::findObjects(string name, bool recursive) {
+	vector<Gengine::Object*> list;
+	for (Gengine::Object* object : Gengine::objects) {
 		if ((object->parent == NULL || recursive) && object->name == name) {
 			list.push_back(object);
 		}
@@ -144,13 +144,13 @@ vector<GE::Object*> GE::findObjects(string name, bool recursive = false) {
 	return list;
 }
 
-vector<GE::Object*> GE::Object::findChilds(string name, bool recursive = false) {
-	vector<GE::Object*> list;
-	for (GE::Object* object : this->childs) {
+vector<Gengine::Object*> Gengine::Object::findChilds(string name, bool recursive) {
+	vector<Gengine::Object*> list;
+	for (Gengine::Object* object : this->childs) {
 		if (object->name == name) {
 			list.push_back(object);
 			if (recursive && object->childs.size() != 0) {
-				for (GE::Object* obj2 : object->findChilds(name, true)) {
+				for (Gengine::Object* obj2 : object->findChilds(name, true)) {
 					list.push_back(obj2);
 				}
 			}
@@ -159,16 +159,16 @@ vector<GE::Object*> GE::Object::findChilds(string name, bool recursive = false) 
 	return list;
 }
 
-GE::Object* GE::findFirstObject(string name, bool recursive = false) {
-	for (GE::Object* object : GE::objects) {
+Gengine::Object* Gengine::findFirstObject(string name, bool recursive) {
+	for (Gengine::Object* object : Gengine::objects) {
 		if ((!object->parent || recursive) && object->name == name) {
 			return object;
 		}
 	}
 	return NULL;
 }
-GE::Object* GE::Object::findFirstChild(string name, bool recursive = false) {
-	for (GE::Object* object : this->childs) {
+Gengine::Object* Gengine::Object::findFirstChild(string name, bool recursive) {
+	for (Gengine::Object* object : this->childs) {
 		if (object->name == name) {
 			return object;
 		}
@@ -182,7 +182,7 @@ GE::Object* GE::Object::findFirstChild(string name, bool recursive = false) {
 	return NULL;
 }
 
-void GE::Object::setParent(GE::Object* newParent) {
+void Gengine::Object::setParent(Gengine::Object* newParent) {
 	this->parent = newParent;
 	for (Object* child : parent->childs) {
 		if (child == this) {
@@ -191,7 +191,7 @@ void GE::Object::setParent(GE::Object* newParent) {
 	}
 	parent->childs.push_back(this);
 }
-void GE::Object::addChild(Object* child) {
+void Gengine::Object::addChild(Object* child) {
 	for (Object* obj : this->childs) {
 		if (obj == child) {
 			return ;
