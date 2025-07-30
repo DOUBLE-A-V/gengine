@@ -2,10 +2,15 @@
 #include <Render.h>
 #include <Window.h>
 #include <Windows.h>
+#include <thread>
 
 class Gengine
 {
 public:
+	static bool running;
+	static thread* renderThread;
+	static thread* fixedUpdateThread;
+	static bool gengineInitialized;
 	using Sprite = Render::Sprite;
 	using Texture = Render::Texture;
 	using Text = Render::Text;
@@ -30,7 +35,7 @@ public:
 		vector<Modifier*> modifiers;
 		string name;
 		vector<Object*> childs;
-		Object* parent;
+		Object* parent = mainTree;
 		Object(string name, ObjectPreset type);
 		void addModifier(string name, void* modifierClass);
 		void addModifier(string name);
@@ -42,6 +47,7 @@ public:
 					return static_cast<T>(modifier->modifierClassPtr);
 				}
 			}
+			return NULL;
 		}
 		Sprite* getSpriteModifier();
 		Text* getTextModifier();
@@ -51,8 +57,6 @@ public:
 		void setParent(Object* newParent);
 		void addChild(Object* child);
 	};
-	static Object* findFirstObject(string name, bool recursive = false);
-	static vector<Object*> findObjects(string name, bool recursive = false);
 
 	static void* createModifierClass(string name);
 	template<typename T>
@@ -74,4 +78,17 @@ public:
 	static Texture* loadTexture(string path);
 
 	static vector<Object*> objects;
+
+	static string visualizeObjectTree(Object* parent);
+	static string visualizeObjectTreeByDeep(Object* parent, int deep = -1);
+
+	static Object* mainTree;
+
+	static void terminate();
+	static int initialize(string windowTitle, int windowWidth, int windowHeight);
+
+	static bool dirExists(string path);
+	static bool fileExists(string path);
+
+	static void startMainloop();
 };

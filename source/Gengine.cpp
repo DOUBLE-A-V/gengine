@@ -5,6 +5,13 @@ Gengine::ObjectPreset Gengine::ObjectType::Sprite = ObjectPreset("Sprite", "spri
 Gengine::ObjectPreset Gengine::ObjectType::Text = ObjectPreset("Text", "text");
 
 vector<Gengine::Object*>Gengine::objects;
+
+bool Gengine::gengineInitialized = false;
+
+Gengine::Object* Gengine::mainTree = new Gengine::Object("Main tree", Gengine::ObjectType::Object);
+
+thread* Gengine::fixedUpdateThread;
+bool Gengine::running = false;
 Gengine::Sprite* Gengine::createSprite(string texturePath) {
 	Sprite* sprite = new Sprite(texturePath.c_str());
 	sprite->position = Vector2(0, 0);
@@ -76,7 +83,24 @@ Gengine::ObjectPreset::ObjectPreset(string name, string modifiers) {
 	}
 	this->name = name;
 }
-
+bool Gengine::dirExists(std::string dirName_in)
+{
+	DWORD ftyp = GetFileAttributesA(dirName_in.c_str());
+	if (ftyp == INVALID_FILE_ATTRIBUTES)
+		return false;
+	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+		return true;
+	return false;
+}
+bool Gengine::fileExists(std::string fileName)
+{
+	DWORD ftyp = GetFileAttributesA(fileName.c_str());
+	if (ftyp == INVALID_FILE_ATTRIBUTES)
+		return false;
+	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+		return false;
+	return true;
+}
 Gengine::Text* Gengine::createText(string text) {
 	Text* textObj = Render::createText(text, 0, 0);
 	return textObj;
@@ -85,7 +109,6 @@ Gengine::Text* Gengine::createText(string text, Vector2 pos) {
 	Text* textObj = Render::createText(text, pos.x, pos.y);
 	return textObj;
 }
-
 string Gengine::getCurrentDir() {
 	char path[256];
 
@@ -134,16 +157,6 @@ Gengine::Text* Gengine::Object::getTextModifier() {
 	return NULL;
 }
 
-vector<Gengine::Object*> Gengine::findObjects(string name, bool recursive) {
-	vector<Gengine::Object*> list;
-	for (Gengine::Object* object : Gengine::objects) {
-		if ((object->parent == NULL || recursive) && object->name == name) {
-			list.push_back(object);
-		}
-	}
-	return list;
-}
-
 vector<Gengine::Object*> Gengine::Object::findChilds(string name, bool recursive) {
 	vector<Gengine::Object*> list;
 	for (Gengine::Object* object : this->childs) {
@@ -157,15 +170,6 @@ vector<Gengine::Object*> Gengine::Object::findChilds(string name, bool recursive
 		}
 	}
 	return list;
-}
-
-Gengine::Object* Gengine::findFirstObject(string name, bool recursive) {
-	for (Gengine::Object* object : Gengine::objects) {
-		if ((!object->parent || recursive) && object->name == name) {
-			return object;
-		}
-	}
-	return NULL;
 }
 Gengine::Object* Gengine::Object::findFirstChild(string name, bool recursive) {
 	for (Gengine::Object* object : this->childs) {
@@ -183,6 +187,18 @@ Gengine::Object* Gengine::Object::findFirstChild(string name, bool recursive) {
 }
 
 void Gengine::Object::setParent(Gengine::Object* newParent) {
+	int count = 0;
+	for (Object* obj : parent->childs) {
+		if (obj == this)
+		{
+			parent->childs.erase(parent->childs.begin() + count);
+			break;
+		}
+		count++;
+	}
+	if (parent) {
+
+	}
 	this->parent = newParent;
 	for (Object* child : parent->childs) {
 		if (child == this) {
@@ -199,4 +215,63 @@ void Gengine::Object::addChild(Object* child) {
 	}
 	this->childs.push_back(child);
 	child->parent = this;
+}
+
+string Gengine::visualizeObjectTreeByDeep(Object* parent, int deep) {
+	vector<Object*> lst;
+	string text;
+	deep++;
+	for (int i = deep; i--; i > 0) {
+		text += "    ";
+	}
+
+	text += "|-" + parent->name;
+	text += "\n";
+	for (int i = deep; i--; i > 0) {
+		text += "    ";
+	}
+	text += " ---";
+	text += "\n";
+	
+	cout << "start" << endl;
+	for (Object* obj : Gengine::objects) {
+		cout << obj->parent << endl;
+		if (obj->parent == parent) {
+			lst.push_back(obj);
+		}
+	}
+	for (Object* obj : lst) {
+		text += visualizeObjectTreeByDeep(obj, deep);
+	}
+	return text;
+}
+string Gengine::visualizeObjectTree(Object* parent) {
+	return visualizeObjectTreeByDeep(parent);
+}
+
+void Gengine::terminate() {
+	running = false;
+	Render::terminate();
+	for (Object* obj : Gengine::objects) {
+		delete obj;
+	}
+	delete mainTree;
+}
+int Gengine::initialize(string windowTitle, int windowWidth, int windowHeight) {
+	int windowInit = Window::init(windowTitle.c_str(), windowWidth, windowHeight);
+	if (windowInit != 0) {
+		Logger::error("window init failed", "Gengine::initialize");
+		return -1;
+	}
+	if (!Render::loadFont(getCurrentDir() + "/gengine/default_font.davf", "default")) {
+		Logger::error("default font loading failed", "Gengine::initialize");
+		return -2;
+	}
+	gengineInitialized = true;
+	running = true;
+	return 1;
+}
+
+void Gengine::startMainloop() {
+	Window::mainloop();
 }

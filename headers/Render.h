@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <Windows.h>
+#include <Logger.hpp>
 
 using uint = unsigned int;
 using namespace std;
@@ -196,6 +198,9 @@ public:
 	static uint createTextureFromData(unsigned char* data, uint width, uint height);
 
 	static Text* createText(string text, int posx, int posy);
+
+	static bool dirExists(string path);
+	static bool fileExists(string path);
 private:
 	static GLFWwindow* window;
 	static Shader* ourShader;

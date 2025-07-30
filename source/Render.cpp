@@ -71,6 +71,7 @@ int Render::init(GLFWwindow* renderWindow) {
 }
 
 void Render::terminate() {
+	glfwSetWindowShouldClose(window, 1);
 	for (Render::Sprite* sprite : Render::sprites) {
 		delete sprite;
 	}
@@ -335,7 +336,29 @@ Render::Character* Render::Font::getChar(int code) {
 	}
 }
 
+bool Render::dirExists(std::string dirName_in)
+{
+	DWORD ftyp = GetFileAttributesA(dirName_in.c_str());
+	if (ftyp == INVALID_FILE_ATTRIBUTES)
+		return false;
+	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+		return true;
+	return false;
+}
+bool Render::fileExists(std::string fileName)
+{
+	DWORD ftyp = GetFileAttributesA(fileName.c_str());
+	if (ftyp == INVALID_FILE_ATTRIBUTES)
+		return false;
+	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+		return false;
+	return true;
+}
+
 Render::Font* Render::loadFont(string path, string loadAsName) {
+	if (!fileExists(path)) {
+		return NULL;
+	}
 	Font* font = new Font();
 	font->name = loadAsName;
 	ifstream f(path, ios::binary);

@@ -1,8 +1,11 @@
-﻿  main.cpp
+﻿  Gengine.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
-  (компиляция исходного файла "source/main.cpp")
+  (компиляция исходного файла "source/Gengine.cpp")
       D:\ACDEV\gengine\include\glad\glad.h(42,9):
       см. предыдущее определение "APIENTRY"
   
-D:\ACDEV\gengine\headers\Gengine.h(45,1): warning C4715: Gengine::Object::getModifier<Render::Sprite *>: значение возвращается не при всех путях выполнения
+D:\ACDEV\gengine\source\Gengine.cpp(109,53): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Gengine.cpp(109,46): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Gengine.cpp(224,28): warning C4552: ">": результат выражения не используется
+D:\ACDEV\gengine\source\Gengine.cpp(230,28): warning C4552: ">": результат выражения не используется
   gengine.vcxproj -> D:\ACDEV\gengine\x64\Debug\gengine.exe
