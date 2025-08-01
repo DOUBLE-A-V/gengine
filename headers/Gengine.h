@@ -300,4 +300,6 @@ public:
 
 	static bool getKey(int keyCode);
 	static bool getMouseButton(int keyCode);
+
+	static float getFPS();
 };

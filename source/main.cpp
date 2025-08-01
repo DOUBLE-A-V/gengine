@@ -12,6 +12,8 @@ void testFixedUpdate() {
 	if (getMouseButton(MOUSE_BUTTON_LEFT)) {
 		mainTree->findFirstChild("just sprite")->getSpriteModifier()->rotation += 1;
 	}
+
+	cout << getFPS() << endl;
 }
 int main() {
 	if (gengineInit("fuck this window", 800, 600) != 1) {

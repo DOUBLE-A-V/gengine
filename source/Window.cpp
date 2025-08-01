@@ -7,7 +7,10 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void(*Window::startFunc)() = NULL;
 void(*Window::updateFunc)(float) = NULL;
 
-clock_t Window::prevFrameTime = 0;
+chrono::system_clock::time_point Window::prevFrameTime = chrono::system_clock::now();
+
+float Window::fps = 0;
+double Window::deltaTime = 0;
 int Window::init(const char* title, int width, int height) {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -49,10 +52,12 @@ void Window::mainloop() {
 	}
 	while (!glfwWindowShouldClose(Window::window))
 	{
+		deltaTime = (chrono::system_clock::now() - prevFrameTime).count() / 10000000.0;
+		prevFrameTime = chrono::system_clock::now();
+		fps = 1.0 / deltaTime;
 		if (updateFunc) {
-			updateFunc((float)(static_cast<int>(clock()) - static_cast<int>(prevFrameTime))/1000);
+			updateFunc(deltaTime);
 		}
-		prevFrameTime = clock();
 		Render::renderFrame();
 	}
 }

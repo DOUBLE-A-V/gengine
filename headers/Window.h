@@ -3,15 +3,16 @@
 class Window
 {
 public:
+	static float fps;
+	static double deltaTime;
+
 	static GLFWwindow* window;
 	static int init(const char* title, int width, int height);
 	static void mainloop();
 	static void terminate();
-	static void processInput(GLFWwindow* window);
-
 	static void (*startFunc)();
 
 	static void (*updateFunc)(float);
 private:
-	static clock_t prevFrameTime;
+	static chrono::system_clock::time_point prevFrameTime;
 };

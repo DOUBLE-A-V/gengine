@@ -45,4 +45,6 @@ namespace GengineDevelopment {
 
 	static bool(*getKey)(int) { Gengine::getKey };
 	static bool(*getMouseButton)(int) { Gengine::getMouseButton };
+
+	static float(*getFPS)() { Gengine::getFPS };
 }

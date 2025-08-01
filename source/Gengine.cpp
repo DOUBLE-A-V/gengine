@@ -332,3 +332,7 @@ Gengine::Object* Gengine::createTextObject(string name, string text) {
 	obj->getModifier<Text*>("Text")->text = text;
 	return obj;
 }
+
+float Gengine::getFPS() {
+	return Window::fps;
+}
