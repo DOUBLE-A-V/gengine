@@ -10,8 +10,49 @@ bool Gengine::gengineInitialized = false;
 
 Gengine::Object* Gengine::mainTree = new Gengine::Object("Main tree", Gengine::ObjectType::Object);
 
-thread* Gengine::fixedUpdateThread;
 bool Gengine::running = false;
+int Gengine::fixedUpdateDelta = 5;
+
+void(*Gengine::fixedUpdateFunc)() = NULL;
+
+bool Gengine::getKey(int key) {
+	int keyState = glfwGetKey(Render::window, key);
+	if (keyState == GLFW_PRESS) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+bool Gengine::getMouseButton(int key) {
+	int keyState = glfwGetMouseButton(Render::window, key);
+	if (keyState == GLFW_PRESS) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+void Gengine::setStartFunc(void (*func)()) {
+	Window::startFunc = func;
+}
+void Gengine::setUpdateFunc(void (*func)(float)) {
+	Window::updateFunc = func;
+}
+void Gengine::setFixedUpdateFunc(void (*func)()) {
+	fixedUpdateFunc = func;
+}
+
+void Gengine::fixedUpdateThread() {
+	while (Gengine::running) {
+		this_thread::sleep_for(chrono::microseconds(fixedUpdateDelta));
+		if (fixedUpdateFunc) {
+			Gengine::fixedUpdateFunc();
+		}
+	}
+}
+
 Gengine::Sprite* Gengine::createSprite(string texturePath) {
 	Sprite* sprite = new Sprite(texturePath.c_str());
 	sprite->position = Vector2(0, 0);
@@ -129,6 +170,7 @@ Gengine::Texture* Gengine::loadTexture(string path) {
 Gengine::Object* Gengine::createObject(string name, ObjectPreset type) {
 	Object* obj = new Object(name, type);
 	objects.push_back(obj);
+	obj->setParent(mainTree);
 	return obj;
 }
 bool Gengine::Object::hasModifier(string name) {
@@ -233,9 +275,7 @@ string Gengine::visualizeObjectTreeByDeep(Object* parent, int deep) {
 	text += " ---";
 	text += "\n";
 	
-	cout << "start" << endl;
 	for (Object* obj : Gengine::objects) {
-		cout << obj->parent << endl;
 		if (obj->parent == parent) {
 			lst.push_back(obj);
 		}
@@ -249,8 +289,12 @@ string Gengine::visualizeObjectTree(Object* parent) {
 	return visualizeObjectTreeByDeep(parent);
 }
 
+void Gengine::terminateFromWindow(GLFWwindow* window) {
+	terminate();
+}
 void Gengine::terminate() {
 	running = false;
+	this_thread::sleep_for(chrono::milliseconds(100));
 	Render::terminate();
 	for (Object* obj : Gengine::objects) {
 		delete obj;
@@ -267,11 +311,24 @@ int Gengine::initialize(string windowTitle, int windowWidth, int windowHeight) {
 		Logger::error("default font loading failed", "Gengine::initialize");
 		return -2;
 	}
+	glfwSetWindowCloseCallback(Render::window, Gengine::terminateFromWindow);
 	gengineInitialized = true;
 	running = true;
 	return 1;
 }
 
 void Gengine::startMainloop() {
+	thread t(fixedUpdateThread);
 	Window::mainloop();
+}
+
+Gengine::Object* Gengine::createSpriteObject(string name, string texturePath) {
+	Object* obj = createObject(name, ObjectType::Sprite);
+	obj->getModifier<Sprite*>("Sprite")->setTexture(loadTexture(texturePath));
+	return obj;
+}
+Gengine::Object* Gengine::createTextObject(string name, string text) {
+	Object* obj = createObject(name, ObjectType::Text);
+	obj->getModifier<Text*>("Text")->text = text;
+	return obj;
 }

@@ -8,4 +8,10 @@ public:
 	static void mainloop();
 	static void terminate();
 	static void processInput(GLFWwindow* window);
+
+	static void (*startFunc)();
+
+	static void (*updateFunc)(float);
+private:
+	static clock_t prevFrameTime;
 };

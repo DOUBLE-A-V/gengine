@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <Windows.h>
 #include <Logger.hpp>
+#include <chrono>
 
 using uint = unsigned int;
 using namespace std;
@@ -201,7 +202,8 @@ public:
 
 	static bool dirExists(string path);
 	static bool fileExists(string path);
-private:
+
 	static GLFWwindow* window;
+private:
 	static Shader* ourShader;
 };

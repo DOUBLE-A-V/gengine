@@ -1,11 +1,21 @@
-﻿  Gengine.cpp
+﻿  Render.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
-  (компиляция исходного файла "source/Gengine.cpp")
+  (компиляция исходного файла "source/Render.cpp")
       D:\ACDEV\gengine\include\glad\glad.h(42,9):
       см. предыдущее определение "APIENTRY"
   
-D:\ACDEV\gengine\source\Gengine.cpp(109,53): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-D:\ACDEV\gengine\source\Gengine.cpp(109,46): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-D:\ACDEV\gengine\source\Gengine.cpp(224,28): warning C4552: ">": результат выражения не используется
-D:\ACDEV\gengine\source\Gengine.cpp(230,28): warning C4552: ">": результат выражения не используется
+D:\ACDEV\gengine\source\Render.cpp(137,20): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(226,14): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(227,15): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(229,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(230,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(310,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(311,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(318,56): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(318,38): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(554,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(555,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(597,24): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(598,24): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(337,1): warning C4715: Render::Font::getChar: значение возвращается не при всех путях выполнения
   gengine.vcxproj -> D:\ACDEV\gengine\x64\Debug\gengine.exe

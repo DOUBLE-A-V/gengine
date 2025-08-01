@@ -4,6 +4,10 @@ GLFWwindow* Window::window;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
+void(*Window::startFunc)() = NULL;
+void(*Window::updateFunc)(float) = NULL;
+
+clock_t Window::prevFrameTime = 0;
 int Window::init(const char* title, int width, int height) {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -40,14 +44,17 @@ void Window::terminate() {
 	glfwTerminate();
 }
 void Window::mainloop() {
+	if (startFunc) {
+		startFunc();
+	}
 	while (!glfwWindowShouldClose(Window::window))
 	{
-		Render::renderFrame();
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-			Render::texts[0]->rotation += 1;
+		if (updateFunc) {
+			updateFunc((float)(static_cast<int>(clock()) - static_cast<int>(prevFrameTime))/1000);
 		}
+		prevFrameTime = clock();
+		Render::renderFrame();
 	}
-	Render::terminate();
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {

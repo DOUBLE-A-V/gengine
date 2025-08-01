@@ -35,4 +35,14 @@ namespace GengineDevelopment {
 	static int(*gengineInit)(string, int, int) { Gengine::initialize };
 
 	static void(*startMainloop)() { Gengine::startMainloop };
+
+	static Object(*createSpriteObject)(string, string) { Gengine::createSpriteObject };
+	static Object(*createTextObject)(string, string) { Gengine::createTextObject };
+
+	static void(*setStartFunc)(void(*)()) { Gengine::setStartFunc };
+	static void(*setUpdateFunc)(void(*)(float)) { Gengine::setUpdateFunc };
+	static void(*setFixedUpdateFunc)(void(*)()) { Gengine::setFixedUpdateFunc };
+
+	static bool(*getKey)(int) { Gengine::getKey };
+	static bool(*getMouseButton)(int) { Gengine::getMouseButton };
 }
