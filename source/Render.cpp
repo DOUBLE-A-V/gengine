@@ -34,7 +34,16 @@ const double pi = acos(-1);
 const double radian = pi / 180.0;
 
 bool first = false;
+string getCurrentDir() {
+	char path[256];
 
+	GetModuleFileNameA(NULL, path, 256);
+
+	string result = path;
+	result = result.substr(0, result.find_last_of("\\/"));
+
+	return result;
+}
 int Render::init(GLFWwindow* renderWindow) {
 	Render::window = renderWindow;
 
@@ -62,9 +71,7 @@ int Render::init(GLFWwindow* renderWindow) {
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD); // this is default
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	Render::ourShader = new Shader("vertexShader.vs", "fragmentShader.fs");
-
+	Render::ourShader = new Shader("gengine/vertexShader.vs", "gengine/fragmentShader.fs", getCurrentDir());
 	glfwSwapInterval(1);
 
 	return 0;

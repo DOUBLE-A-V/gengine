@@ -362,4 +362,10 @@
     <None Include="vertexShader.vs" />
     <None Include="fragmentShader.fs" />
   </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\freetype.lib" />
+    <Library Include="lib\glfw3.lib" />
+    <Library Include="lib\libfreetype.dll.a" />
+    <Library Include="lib\opengl32.lib" />
+  </ItemGroup>
 </Project>

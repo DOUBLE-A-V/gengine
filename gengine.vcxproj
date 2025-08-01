@@ -140,6 +140,12 @@
     <None Include="include\root_directory.h.in" />
     <None Include="vertexShader.vs" />
   </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\freetype.lib" />
+    <Library Include="lib\glfw3.lib" />
+    <Library Include="lib\libfreetype.dll.a" />
+    <Library Include="lib\opengl32.lib" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
