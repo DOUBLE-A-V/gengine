@@ -341,6 +341,7 @@ Render::Character* Render::Font::getChar(int code) {
 			return ch;
 		}
 	}
+	return NULL;
 }
 
 bool Render::dirExists(std::string dirName_in)

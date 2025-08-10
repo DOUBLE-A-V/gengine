@@ -1,0 +1,12 @@
+﻿  Gengine.cpp
+  Render.cpp
+  main.cpp
+D:\ACDEV\gengine\source\Gengine.cpp(1,10): error C1083: Не удается открыть файл включение: Gengine.h: No such file or directory,
+D:\ACDEV\gengine\source\Render.cpp(1,10): error C1083: Не удается открыть файл включение: Render.h: No such file or directory,
+D:\ACDEV\gengine\source\main.cpp(3,10): error C1083: Не удается открыть файл включение: GengineDevelopment.hpp: No such file or directory,
+  stb_image.cpp
+D:\ACDEV\gengine\stb_image.cpp(2,10): error C1083: Не удается открыть файл включение: stb_image.h: No such file or directory,
+  Window.cpp
+D:\ACDEV\gengine\source\Window.cpp(1,10): error C1083: Не удается открыть файл включение: Window.h: No such file or directory,
+  Vector2.cpp
+D:\ACDEV\gengine\source\Vector2.cpp(1,10): error C1083: Не удается открыть файл включение: Vector2.h: No such file or directory,

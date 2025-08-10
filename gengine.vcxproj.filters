@@ -36,6 +36,12 @@
     <ClCompile Include="source\Gengine.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="headers\Collisions.h">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Collisions.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\glad\glad.h">
@@ -363,9 +369,7 @@
     <None Include="fragmentShader.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\freetype.lib" />
     <Library Include="lib\glfw3.lib" />
-    <Library Include="lib\libfreetype.dll.a" />
     <Library Include="lib\opengl32.lib" />
   </ItemGroup>
 </Project>

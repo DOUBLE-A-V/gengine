@@ -10,5 +10,9 @@ public:
 	Vector2(int x, int y);
 	Vector2(float x, float y);
 
+	Vector2 operator+(Vector2 vec2);
+
+	float distance(Vector2 pos);
+
 	operator string();
 };

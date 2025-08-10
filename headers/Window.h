@@ -13,6 +13,8 @@ public:
 	static void (*startFunc)();
 
 	static void (*updateFunc)(float);
+
+	static void(*updateAllPoses)();
 private:
 	static chrono::system_clock::time_point prevFrameTime;
 };

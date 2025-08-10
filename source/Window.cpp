@@ -6,6 +6,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 void(*Window::startFunc)() = NULL;
 void(*Window::updateFunc)(float) = NULL;
+void(*Window::updateAllPoses)() = NULL;
 
 chrono::system_clock::time_point Window::prevFrameTime = chrono::system_clock::now();
 
@@ -58,6 +59,7 @@ void Window::mainloop() {
 		if (updateFunc) {
 			updateFunc(deltaTime);
 		}
+		updateAllPoses();
 		Render::renderFrame();
 	}
 }

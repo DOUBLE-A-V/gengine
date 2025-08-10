@@ -15,6 +15,9 @@ int Gengine::fixedUpdateDelta = 5;
 
 void(*Gengine::fixedUpdateFunc)() = NULL;
 
+const double pi = acos(-1);
+const double radian = pi / 180.0;
+
 bool Gengine::getKey(int key) {
 	int keyState = glfwGetKey(Render::window, key);
 	if (keyState == GLFW_PRESS) {
@@ -58,6 +61,7 @@ Gengine::Sprite* Gengine::createSprite(string texturePath) {
 	sprite->position = Vector2(0, 0);
 	sprite->resize(sprite->texture->width, sprite->texture->height);
 	Render::sprites.push_back(sprite);
+	sprite->parent = mainTree;
 	return sprite;
 }
 
@@ -66,6 +70,7 @@ Gengine::Sprite* Gengine::createSprite(string texturePath, Vector2 pos) {
 	sprite->position = Vector2(pos.x, pos.y);
 	sprite->resize(sprite->texture->width, sprite->texture->height);
 	Render::sprites.push_back(sprite);
+	sprite->parent = mainTree;
 	return sprite;
 }
 
@@ -73,15 +78,71 @@ Gengine::Sprite* Gengine::createSprite() {
 	Sprite* sprite = new Sprite();
 	sprite->position = Vector2(0, 0);
 	Render::sprites.push_back(sprite);
+	sprite->parent = mainTree;
 	return sprite;
 }
 
-void* Gengine::createModifierClass(string name) {
+void Gengine::updateAllPoses() {
+	mainTree->realPosition = mainTree->position;
+	mainTree->realRotation = mainTree->rotation;
+	mainTree->updateAllPoses();
+}
+
+void Gengine::Object::updateAllPoses() {
+	if (rotation != oldRotation || position.x != oldPosition.x || position.y != oldPosition.y) {
+		transformChanged = true;
+	}
+	float s;
+	float c;
+	if (transformChanged) {
+		oldRotation = rotation;
+		oldPosition = position;
+		s = sin(-realRotation * radian);
+		c = cos(-realRotation * radian);
+		realPosition.x = parent->realPosition.x + (position.x * c) + (position.y * s);
+		realPosition.y = parent->realPosition.x + (position.x * s) + (position.y * c);
+		realRotation = parent->realRotation + rotation;
+	}
+
+	for (Modifier* mod : modifiers) {
+		if (mod->name == "Sprite") {
+			Sprite* tmp = static_cast<Sprite*>(mod->modifierClassPtr);
+			tmp->rotation = realRotation + tmp->localRotation;
+			if (transformChanged) {
+				tmp->position.x = realPosition.x + (tmp->localPosition.x * c) + (tmp->localPosition.y * s);
+				tmp->position.y = realPosition.y + (tmp->localPosition.x * s) - (tmp->localPosition.y * c);
+			}
+		}
+		else if (mod->name == "Text") {
+			Text* tmp = static_cast<Text*>(mod->modifierClassPtr);
+			tmp->position = realPosition + tmp->localPosition;
+		}
+		else if (mod->name == "Collision") {
+			Collision* tmp = static_cast<Collision*>(mod->modifierClassPtr);
+			tmp->position = realPosition + tmp->localPosition;
+		}
+	}
+	for (Object* obj : childs) {
+		obj->transformChanged = transformChanged;
+		obj->updateAllPoses();
+	}
+	transformChanged = false;
+}
+
+void* Gengine::createModifierClass(string name, Object* parent) {
 	if (name == "Sprite") {
-		return createSprite();
+		Sprite* tmp = createSprite();
+		tmp->parent = parent;
+		return tmp;
 	}
 	else if (name == "Text") {
-		return createText("hello world");
+		Text* tmp = createText("");
+		tmp->parent = parent;
+		return tmp;
+	}
+	else if (name == "Collision") {
+		Collision* tmp = createCollision(Vector2(50, 50));
+		tmp->parent = parent;
 	}
 	return NULL;
 }
@@ -102,13 +163,15 @@ void Gengine::Object::addModifier(string name, void* modifierClass) {
 void Gengine::Object::addModifier(string name) {
 	Modifier* modifier = new Modifier();
 	modifier->name = name;
-	modifier->modifierClassPtr = createModifierClass(name);
+	modifier->modifierClassPtr = createModifierClass(name, this);
 	this->modifiers.push_back(modifier);
 }
 Gengine::Object::Object(string name, ObjectPreset type) {
 	this->name = name;
+	this->position = Vector2(0, 0);
+	this->realPosition = Vector2(0, 0);
 	for (string modifier : type.modifiers) {
-		this->addModifier(type.name, createModifierClass(type.name));
+		this->addModifier(type.name, createModifierClass(type.name, this));
 	}
 }
 Gengine::ObjectPreset::ObjectPreset(string name, string modifiers) {
@@ -144,10 +207,12 @@ bool Gengine::fileExists(std::string fileName)
 }
 Gengine::Text* Gengine::createText(string text) {
 	Text* textObj = Render::createText(text, 0, 0);
+	textObj->parent = mainTree;
 	return textObj;
 }
 Gengine::Text* Gengine::createText(string text, Vector2 pos) {
 	Text* textObj = Render::createText(text, pos.x, pos.y);
+	textObj->parent = mainTree;
 	return textObj;
 }
 string Gengine::getCurrentDir() {
@@ -161,9 +226,11 @@ string Gengine::getCurrentDir() {
 	return result;
 }
 Gengine::Texture* Gengine::loadTexture(const char* path) {
+	path = repairPath(path).c_str();
 	return Render::loadTexture(path);
 }
 Gengine::Texture* Gengine::loadTexture(string path) {
+	path = repairPath(path).c_str();
 	return Render::loadTexture(path.c_str());
 }
 
@@ -312,6 +379,8 @@ int Gengine::initialize(string windowTitle, int windowWidth, int windowHeight) {
 		return -2;
 	}
 	glfwSetWindowCloseCallback(Render::window, Gengine::terminateFromWindow);
+	Window::updateAllPoses = updateAllPoses;
+
 	gengineInitialized = true;
 	running = true;
 	return 1;
@@ -324,6 +393,7 @@ void Gengine::startMainloop() {
 
 Gengine::Object* Gengine::createSpriteObject(string name, string texturePath) {
 	Object* obj = createObject(name, ObjectType::Sprite);
+	texturePath = repairPath(texturePath);
 	obj->getModifier<Sprite*>("Sprite")->setTexture(loadTexture(texturePath));
 	return obj;
 }
@@ -335,4 +405,20 @@ Gengine::Object* Gengine::createTextObject(string name, string text) {
 
 float Gengine::getFPS() {
 	return Window::fps;
+}
+
+string Gengine::repairPath(string path) {
+	for (char ch : path) {
+		if (ch == ':') {
+			return path;
+		}
+	}
+	string newPath = getCurrentDir();
+	newPath += "/" + path;
+	return newPath;
+}
+Collision* Gengine::createCollision(Vector2 rect) {
+	//Collision* col = new Collision(rect);
+	//col->parent = mainTree;
+	return NULL;
 }

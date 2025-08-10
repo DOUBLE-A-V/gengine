@@ -16,3 +16,14 @@ Vector2::Vector2(int x, int y) {
 	this->x = (float)x;
 	this->y = (float)y;
 }
+
+float Vector2::distance(Vector2 pos) {
+	float tmpx = pos.x - x;
+	float tmpy = pos.y - y;
+
+	return sqrt(abs(tmpx * tmpx + tmpy * tmpy));
+}
+
+Vector2 Vector2::operator+(Vector2 vec2) {
+	return Vector2(x + vec2.x, y + vec2.y);
+}

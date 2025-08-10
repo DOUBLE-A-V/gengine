@@ -100,7 +100,11 @@ public:
 	class Sprite {
 	public:
 		Vector2 position;
+		Vector2 localPosition;
+		void* parent = NULL;
 		float rotation = 0;
+		float realRotation = 0;
+		float localRotation = 0;
 		void resize(int newWidth, int newHeight);
 		Vector2 getSize();
 		Render::Texture* texture = NULL;
@@ -126,7 +130,10 @@ public:
 	};
 	class Text {
 	public:
+		void* parent;
 		Vector2 position;
+		Vector2 localPosition;
+
 		vector<uint> charsTextures;
 		string text = "";
 		Font* font;
@@ -134,6 +141,7 @@ public:
 		float charDistance = 8;
 		float lineDistance = 8;
 		float rotation = 0;
+		float localRotation = 0;
 
 		vector<float> vertices = {
 			0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
@@ -145,8 +153,6 @@ public:
 		float alpha, red, green, blue;
 
 		void setFont(string fontName);
-		void setFont(Font* font);
-
 		void checkChanges();
 
 		vector<float> calcVerticesForChar(int num, int line);

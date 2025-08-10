@@ -1,0 +1,72 @@
+﻿  Gengine.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
+  (компиляция исходного файла "source/Gengine.cpp")
+      D:\ACDEV\gengine\include\glad\glad.h(42,9):
+      см. предыдущее определение "APIENTRY"
+  
+D:\ACDEV\gengine\headers\Gengine.h(132,9): warning C4005: MOD_SHIFT: изменение макроопределения
+  (компиляция исходного файла "source/Gengine.cpp")
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\winuser.h(3572,9):
+      см. предыдущее определение "MOD_SHIFT"
+  
+D:\ACDEV\gengine\headers\Gengine.h(134,9): warning C4005: MOD_ALT: изменение макроопределения
+  (компиляция исходного файла "source/Gengine.cpp")
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\winuser.h(3570,9):
+      см. предыдущее определение "MOD_ALT"
+  
+D:\ACDEV\gengine\source\Gengine.cpp(150,53): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Gengine.cpp(150,46): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Gengine.cpp(266,28): warning C4552: ">": результат выражения не используется
+D:\ACDEV\gengine\source\Gengine.cpp(272,28): warning C4552: ">": результат выражения не используется
+  Render.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
+  (компиляция исходного файла "source/Render.cpp")
+      D:\ACDEV\gengine\include\glad\glad.h(42,9):
+      см. предыдущее определение "APIENTRY"
+  
+D:\ACDEV\gengine\source\Render.cpp(144,20): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(233,14): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(234,15): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(236,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(237,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(317,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(318,17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(325,56): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(325,38): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(561,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(562,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(604,24): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Render.cpp(605,24): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+  main.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
+  (компиляция исходного файла "source/main.cpp")
+      D:\ACDEV\gengine\include\glad\glad.h(42,9):
+      см. предыдущее определение "APIENTRY"
+  
+D:\ACDEV\gengine\headers\Gengine.h(132,9): warning C4005: MOD_SHIFT: изменение макроопределения
+  (компиляция исходного файла "source/main.cpp")
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\winuser.h(3572,9):
+      см. предыдущее определение "MOD_SHIFT"
+  
+D:\ACDEV\gengine\headers\Gengine.h(134,9): warning C4005: MOD_ALT: изменение макроопределения
+  (компиляция исходного файла "source/main.cpp")
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\winuser.h(3570,9):
+      см. предыдущее определение "MOD_ALT"
+  
+  stb_image.cpp
+  Window.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
+  (компиляция исходного файла "source/Window.cpp")
+      D:\ACDEV\gengine\include\glad\glad.h(42,9):
+      см. предыдущее определение "APIENTRY"
+  
+D:\ACDEV\gengine\source\Window.cpp(57,13): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+D:\ACDEV\gengine\source\Window.cpp(59,15): warning C4244: аргумент: преобразование "double" в "float", возможна потеря данных
+  Vector2.cpp
+  glad.c
+  Создание кода
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+D:\ACDEV\gengine\source\Render.cpp(344): warning C4715: Render::Font::getChar: значение возвращается не при всех путях выполнения
+  All 1207 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Создание кода завершено
+  gengine.vcxproj -> D:\ACDEV\gengine\x64\Release\gengine.exe

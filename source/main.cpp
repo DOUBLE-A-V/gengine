@@ -10,18 +10,20 @@ void start() {
 }
 void testFixedUpdate() {
 	if (getMouseButton(MOUSE_BUTTON_LEFT)) {
-		mainTree->findFirstChild("just sprite")->getSpriteModifier()->rotation += 1;
+		mainTree->findFirstChild("just sprite")->rotation += 1;
 	}
-
-	cout << getFPS() << endl;
 }
 int main() {
 	if (gengineInit("fuck this window", 800, 600) != 1) {
 		return -1;
 	}
 	Object image = createSpriteObject("just sprite", "D:/daun.png");
+	Object image2 = createSpriteObject("just another sprite", "D:/daun2.png");
+	image2->position.x = 200;
+	image2->setParent(image);
 	setStartFunc(start);
 	setFixedUpdateFunc(testFixedUpdate);
+
 
 	startMainloop();
 	return 0;

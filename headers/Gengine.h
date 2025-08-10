@@ -3,6 +3,7 @@
 #include <Window.h>
 #include <Windows.h>
 #include <thread>
+#include <Collisions.h>
 
 //all keys define
 //chars keys
@@ -226,10 +227,11 @@ public:
 	class Modifier {
 	public:
 		string name;
-		void* modifierClassPtr;
+		void* modifierClassPtr = NULL; 
 	};
 	class Object {
 	public:
+		bool transformChanged = false;
 		vector<Modifier*> modifiers;
 		string name;
 		vector<Object*> childs;
@@ -247,6 +249,10 @@ public:
 			}
 			return NULL;
 		}
+
+		Vector2 realPosition;
+
+		void updateAllPoses();
 		Sprite* getSpriteModifier();
 		Text* getTextModifier();
 		bool hasModifier(string name);
@@ -254,9 +260,17 @@ public:
 		Object* findFirstChild(string name, bool recursive = false);
 		void setParent(Object* newParent);
 		void addChild(Object* child);
+
+		float realRotation;
+
+		Vector2 position;
+		Vector2 oldPosition;
+
+		float rotation = 0;
+		float oldRotation = 0;
 	};
 
-	static void* createModifierClass(string name);
+	static void* createModifierClass(string name, Object* parent = mainTree);
 	template<typename T>
 	static T createModifierClass(string name) {
 		return static_cast<T>(createModifierClass(name));
@@ -264,6 +278,8 @@ public:
 	static Sprite* createSprite(string texturePath);
 	static Sprite* createSprite();
 	static Sprite* createSprite(string texturePath, Vector2 pos);
+
+	static Collision* createCollision(Vector2 rect);
 
 	static Text* createText(string text);
 	static Text* createText(string text, Vector2 pos);
@@ -302,4 +318,8 @@ public:
 	static bool getMouseButton(int keyCode);
 
 	static float getFPS();
+
+	static string repairPath(string path);
+
+	static void updateAllPoses();
 };
