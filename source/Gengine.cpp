@@ -3,6 +3,7 @@
 Gengine::ObjectPreset Gengine::ObjectType::Object = ObjectPreset("Object", "");
 Gengine::ObjectPreset Gengine::ObjectType::Sprite = ObjectPreset("Sprite", "sprite");
 Gengine::ObjectPreset Gengine::ObjectType::Text = ObjectPreset("Text", "text");
+Gengine::ObjectPreset Gengine::ObjectType::Collision = ObjectPreset("Collision", "collision");
 
 vector<Gengine::Object*>Gengine::objects;
 
@@ -99,9 +100,11 @@ void Gengine::Object::updateAllPoses() {
 		oldPosition = position;
 		s = sin(-realRotation * radian);
 		c = cos(-realRotation * radian);
-		realPosition.x = parent->realPosition.x + (position.x * c) + (position.y * s);
-		realPosition.y = parent->realPosition.x + (position.x * s) + (position.y * c);
-		realRotation = parent->realRotation + rotation;
+		if (parent) {
+			realPosition.x = parent->realPosition.x + (position.x * c) + (position.y * s);
+			realPosition.y = parent->realPosition.x + (position.x * s) + (position.y * c);
+			realRotation = parent->realRotation + rotation;
+		}
 	}
 
 	for (Modifier* mod : modifiers) {
@@ -115,11 +118,19 @@ void Gengine::Object::updateAllPoses() {
 		}
 		else if (mod->name == "Text") {
 			Text* tmp = static_cast<Text*>(mod->modifierClassPtr);
-			tmp->position = realPosition + tmp->localPosition;
+			tmp->rotation = realRotation + tmp->localRotation;
+			if (transformChanged) {
+				tmp->position.x = realPosition.x + (tmp->localPosition.x * c) + (tmp->localPosition.y * s);
+				tmp->position.y = realPosition.y + (tmp->localPosition.x * s) - (tmp->localPosition.y * c);
+			}
 		}
 		else if (mod->name == "Collision") {
-			Collision* tmp = static_cast<Collision*>(mod->modifierClassPtr);
-			tmp->position = realPosition + tmp->localPosition;
+			CollisionObject* tmp = static_cast<CollisionObject*>(mod->modifierClassPtr);
+			tmp->rotation = realRotation + tmp->localRotation;
+			if (transformChanged) {
+				tmp->position.x = realPosition.x + (tmp->localPosition.x * c) + (tmp->localPosition.y * s);
+				tmp->position.y = realPosition.y + (tmp->localPosition.x * s) - (tmp->localPosition.y * c);
+			}
 		}
 	}
 	for (Object* obj : childs) {
@@ -141,8 +152,9 @@ void* Gengine::createModifierClass(string name, Object* parent) {
 		return tmp;
 	}
 	else if (name == "Collision") {
-		Collision* tmp = createCollision(Vector2(50, 50));
+		CollisionObject* tmp = createCollision(Vector2(50, 50));
 		tmp->parent = parent;
+		return tmp;
 	}
 	return NULL;
 }
@@ -250,20 +262,13 @@ bool Gengine::Object::hasModifier(string name) {
 }
 
 Gengine::Sprite* Gengine::Object::getSpriteModifier() {
-	for (Modifier* modifier : this->modifiers) {
-		if (modifier->name == "Sprite") {
-			return static_cast<Gengine::Sprite*>(modifier->modifierClassPtr);
-		}
-	}
-	return NULL;
+	return this->getModifier<Sprite*>("Sprite");
 }
 Gengine::Text* Gengine::Object::getTextModifier() {
-	for (Modifier* modifier : this->modifiers) {
-		if (modifier->name == "Text") {
-			return static_cast<Gengine::Text*>(modifier->modifierClassPtr);
-		}
-	}
-	return NULL;
+	return this->getModifier<Text*>("Text");
+}
+CollisionObject* Gengine::Object::getCollisionModifier() {
+	return this->getModifier<CollisionObject*>("Collision");
 }
 
 vector<Gengine::Object*> Gengine::Object::findChilds(string name, bool recursive) {
@@ -402,6 +407,11 @@ Gengine::Object* Gengine::createTextObject(string name, string text) {
 	obj->getModifier<Text*>("Text")->text = text;
 	return obj;
 }
+Gengine::Object* Gengine::createCollisionObject(string name, Vector2 rect) {
+	Object* obj = createObject(name, ObjectType::Collision);
+	obj->getModifier<CollisionObject*>("Collision")->rect = rect;
+	return obj;
+}
 
 float Gengine::getFPS() {
 	return Window::fps;
@@ -417,8 +427,32 @@ string Gengine::repairPath(string path) {
 	newPath += "/" + path;
 	return newPath;
 }
-Collision* Gengine::createCollision(Vector2 rect) {
-	//Collision* col = new Collision(rect);
-	//col->parent = mainTree;
-	return NULL;
+CollisionObject* Gengine::createCollision(Vector2 rect) {
+	CollisionObject* col = new CollisionObject(rect);
+	col->parent = mainTree;
+	col->oldRotation = col->rotation;
+	col->s = sin(radian * col->rotation);
+	col->c = cos(radian * col->rotation);
+
+	col->maxVertexDistance = sqrt(rect.x * rect.x + rect.y * rect.y) / 2;
+	col->oldRect.x = rect.x;
+	col->oldRect.y = rect.y;
+
+	col->oldPosition = col->position;
+	col->updatePoints();
+	return col;
+}
+
+Vector2 Gengine::getMousePos() {
+	double x;
+	double y;
+	glfwGetCursorPos(Render::window, &x, &y);
+
+	x *= 2;
+	y *= 2;
+	x -= Render::windowWidth;
+	y -= Render::windowHeight;
+	y = -y;
+
+	return Vector2(x, y);
 }

@@ -262,6 +262,7 @@ void Render::updateAllVertices() {
 }
 
 Render::Texture::Texture(uint id, vector<float> vertices, int width, int height, size_t verticesSize) {
+	cout << width << endl;
 	this->texture = id;
 	this->vertices = vertices;
 	this->width = width;

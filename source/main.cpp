@@ -4,26 +4,25 @@
 
 using namespace std;
 using namespace GengineDevelopment;
-
 void start() {
 	cout << "hello world from Gengine" << endl;
 }
-void testFixedUpdate() {
+void testUpdate(float delta) {
 	if (getMouseButton(MOUSE_BUTTON_LEFT)) {
-		mainTree->findFirstChild("just sprite")->rotation += 1;
+		mainTree->rotation += 20 * delta;
 	}
+	cout << mainTree->findFirstChild("just sprite")->getModifier<Collision>("Collision")->havePoint(getMousePos()) << " | " << (string)(getMousePos()) << endl;;
 }
 int main() {
 	if (gengineInit("fuck this window", 800, 600) != 1) {
 		return -1;
 	}
 	Object image = createSpriteObject("just sprite", "D:/daun.png");
-	Object image2 = createSpriteObject("just another sprite", "D:/daun2.png");
-	image2->position.x = 200;
-	image2->setParent(image);
+	image->addModifier("Collision");
+	image->getModifier<Collision>("Collision")->rect = Vector2(image->getSpriteModifier()->texture->width, image->getSpriteModifier()->texture->height);
+	image->rotation = 45;
 	setStartFunc(start);
-	setFixedUpdateFunc(testFixedUpdate);
-
+	setUpdateFunc(testUpdate);
 
 	startMainloop();
 	return 0;

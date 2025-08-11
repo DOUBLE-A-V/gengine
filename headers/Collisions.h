@@ -2,9 +2,9 @@
 #include<Vector2.h>
 #include<vector>
 
-class Collision {
+class CollisionObject {
 public:
-	Collision(Vector2 rect);
+	CollisionObject(Vector2 rect);
 	void* parent;
 	void checkChanges();
 	Vector2 rect;
@@ -12,23 +12,20 @@ public:
 	Vector2 localPosition;
 	float rotation = 0;
 	float localRotation = 0;
-	vector<Collision*> checkForCollisions();
-	bool isCollide(Collision* col);
+	vector<CollisionObject*> checkForCollisions();
+	bool isCollide(CollisionObject* col);
 	bool havePoint(Vector2 point);
-	~Collision();
-private:
+	~CollisionObject();
 	void updatePoints();
 	Vector2 oldRect;
 	float oldRotation;
-	Vector2 oldPos;
+	Vector2 oldPosition;
 
-	bool canCollide(Collision* col);
-	bool isCollideNoCheckChanges(Collision* col);
+	bool canCollide(CollisionObject* col);
+	bool isCollideNoCheckChanges(CollisionObject* col);
 	bool havePointNoCheckChanges(Vector2 point);
 	float s;
 	float c;
-	float s1;
-	float c1;
 
 	float dividedRectx;
 	float dividedRecty;
@@ -40,4 +37,4 @@ private:
 
 	float maxVertexDistance;
 };
-static vector<Collision*> collisions;
+static vector<CollisionObject*> collisions;

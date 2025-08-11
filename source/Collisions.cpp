@@ -3,24 +3,7 @@
 const double pi = acos(-1);
 const double radian = pi / 180.0;
 
-Collision::Collision(Vector2 rect) {
-	this->rect = rect;
-	this->oldRect = rect;
-	this->position = Vector2(0, 0);
-	this->rotation = 0;
-	this->oldRotation = 0;
-	this->s = 0;
-	this->c = 0;
-	this->s1 = 0;
-	this->c1 = 0;
-	this->maxVertexDistance = sqrt(rect.x*rect.x + rect.y*rect.y)/2;
-
-	updatePoints();
-
-	collisions.push_back(this);
-}
-
-void Collision::updatePoints() {
+void CollisionObject::updatePoints() {
 	dividedRectx = rect.x / 2;
 	dividedRecty = rect.y / 2;
 
@@ -29,10 +12,26 @@ void Collision::updatePoints() {
 	point3 = Vector2(position.x + (dividedRectx * c) + (dividedRecty * s), position.y + (dividedRectx * s) - (dividedRecty * c));
 	point4 = Vector2(position.x - (dividedRectx * c) + (dividedRecty * s), position.y - (dividedRectx * s) - (dividedRecty * c));
 }
+CollisionObject::CollisionObject(Vector2 rect) {
+	rect = rect*2;
+	cout << (string)rect << endl;
+	this->rect = rect;
+	this->oldRect = rect;
+	this->position = Vector2(0, 0);
+	this->rotation = 0;
+	this->oldRotation = 0;
+	this->s = 0;
+	this->c = 0;
+	this->maxVertexDistance = sqrt(rect.x*rect.x + rect.y*rect.y);
 
-Collision::~Collision() {
+	this->updatePoints();
+
+	collisions.push_back(this);
+}
+
+CollisionObject::~CollisionObject() {
 	int count = 0;
-	for (Collision* col : collisions) {
+	for (CollisionObject* col : collisions) {
 		if (col == this) {
 			collisions.erase(collisions.begin() + count);
 			break;
@@ -41,39 +40,51 @@ Collision::~Collision() {
 	}
 }
 
-bool Collision::isCollide(Collision* col) {
+bool CollisionObject::isCollide(CollisionObject* col) {
 	checkChanges();
 	return isCollideNoCheckChanges(col);
 }
-bool Collision::havePoint(Vector2 point) {
+bool CollisionObject::havePoint(Vector2 point) {
 	checkChanges();
 	return havePointNoCheckChanges(point);
 }
 
-void Collision::checkChanges() {
+void CollisionObject::checkChanges() {
+	bool changed = false;
 	if (rotation != oldRotation) {
 		oldRotation = rotation;
 		this->s = sin(radian * rotation);
 		this->c = cos(radian * rotation);
-		this->s1 = sin(radian * -rotation);
-		this->c1 = cos(radian * -rotation);
+
+		changed = true;
 	}
 	if (rect.x != oldRect.x || rect.y != oldRect.y) {
 		this->maxVertexDistance = sqrt(rect.x * rect.x + rect.y * rect.y)/2;
 		oldRect.x = rect.x;
 		oldRect.y = rect.y;
-		updatePoints();
+		dividedRectx = rect.x / 2;
+		dividedRecty = rect.y / 2;
+
+		cout << dividedRectx << endl;
+
+		changed = true;
 	}
+	if (position.x != oldPosition.x || position.y != oldPosition.y) {
+		oldPosition = position;
+
+		changed = true;
+	}
+	if (changed) { this->updatePoints(); }
 }
 
-bool Collision::canCollide(Collision* col) {
+bool CollisionObject::canCollide(CollisionObject* col) {
 	return this->maxVertexDistance + col->maxVertexDistance > this->position.distance(col->position);
 }
 
-vector<Collision*> Collision::checkForCollisions() {
-	vector<Collision*> result;
+vector<CollisionObject*> CollisionObject::checkForCollisions() {
+	vector<CollisionObject*> result;
 	checkChanges();
-	for (Collision* col : collisions) {
+	for (CollisionObject* col : collisions) {
 		if (col != this && canCollide(col)) {
 			col->checkChanges();
 			if (isCollideNoCheckChanges(col)) {
@@ -84,23 +95,20 @@ vector<Collision*> Collision::checkForCollisions() {
 	return result;
 }
 
-bool Collision::havePointNoCheckChanges(Vector2 point) {
+bool CollisionObject::havePointNoCheckChanges(Vector2 point) {
 	point.x -= position.x;
 	point.y -= position.y;
-	
-	point = Vector2((point.x * c1) - (point.y * s1), (point.y * c1) + (point.x * s1));
+
+	point = Vector2((point.x * c) - (point.y * s), (point.y * c) + (point.x * s));
 	
 	point.x += position.x;
 	point.y += position.y;
 
-	if ((point.x > position.x - dividedRectx && point.x < position.x + dividedRectx) &&
-		(point.y > position.y - dividedRecty && point.y < position.y + dividedRecty)) {
-		return true;
-	}
-	return false;
+	return ((point.x > position.x - dividedRectx && point.x < position.x + dividedRectx) &&
+			(point.y > position.y - dividedRecty && point.y < position.y + dividedRecty));
 }
 
-bool Collision::isCollideNoCheckChanges(Collision* col) {
+bool CollisionObject::isCollideNoCheckChanges(CollisionObject* col) {
 	if (havePointNoCheckChanges(col->point1)) { return true; };
 	if (havePointNoCheckChanges(col->point2)) { return true; };
 	if (havePointNoCheckChanges(col->point3)) { return true; };

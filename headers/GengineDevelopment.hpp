@@ -11,6 +11,7 @@ namespace GengineDevelopment {
 	using Object = Gengine::Object*;
 	using ObjectPreset = Gengine::ObjectPreset;
 	using Font = Render::Font*;
+	using Collision = CollisionObject*;
 
 	static Object mainTree = Gengine::mainTree;
 
@@ -47,4 +48,6 @@ namespace GengineDevelopment {
 	static bool(*getMouseButton)(int) { Gengine::getMouseButton };
 
 	static float(*getFPS)() { Gengine::getFPS };
+
+	static Vector2(*getMousePos)() { Gengine::getMousePos };
 }

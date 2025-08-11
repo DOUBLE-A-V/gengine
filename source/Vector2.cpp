@@ -5,6 +5,10 @@ Vector2::Vector2(float x, float y) {
 	this->x = x;
 	this->y = y;
 }
+Vector2::Vector2(double x, double y) {
+	this->x = x;
+	this->y = y;
+}
 Vector2::Vector2() {
 	this->x = 0;
 	this->y = 0;
@@ -15,6 +19,13 @@ Vector2::operator string() {
 Vector2::Vector2(int x, int y) {
 	this->x = (float)x;
 	this->y = (float)y;
+}
+
+Vector2 Vector2::operator/(float divideBy) {
+	return Vector2(this->x / divideBy, this->y / divideBy);
+}
+Vector2 Vector2::operator*(float multiplier) {
+	return Vector2(this->x * multiplier, this->y * multiplier);
 }
 
 float Vector2::distance(Vector2 pos) {

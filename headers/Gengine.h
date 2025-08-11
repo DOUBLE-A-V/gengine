@@ -222,6 +222,7 @@ public:
 		static ObjectPreset Object;
 		static ObjectPreset Sprite;
 		static ObjectPreset Text;
+		static ObjectPreset Collision;
 	};
 
 	class Modifier {
@@ -255,6 +256,7 @@ public:
 		void updateAllPoses();
 		Sprite* getSpriteModifier();
 		Text* getTextModifier();
+		CollisionObject* getCollisionModifier();
 		bool hasModifier(string name);
 		vector<Object*> findChilds(string name, bool recursive = false);
 		Object* findFirstChild(string name, bool recursive = false);
@@ -279,7 +281,7 @@ public:
 	static Sprite* createSprite();
 	static Sprite* createSprite(string texturePath, Vector2 pos);
 
-	static Collision* createCollision(Vector2 rect);
+	static CollisionObject* createCollision(Vector2 rect);
 
 	static Text* createText(string text);
 	static Text* createText(string text, Vector2 pos);
@@ -310,6 +312,8 @@ public:
 	static Object* createSpriteObject(string name, string texturePath);
 	static Object* createTextObject(string name, string text);
 
+	static Object* createCollisionObject(string name, Vector2 rect);
+
 	static void setStartFunc(void (*func)());
 	static void setUpdateFunc(void (*func)(float));
 	static void setFixedUpdateFunc(void (*func)());
@@ -322,4 +326,6 @@ public:
 	static string repairPath(string path);
 
 	static void updateAllPoses();
+
+	static Vector2 getMousePos();
 };
