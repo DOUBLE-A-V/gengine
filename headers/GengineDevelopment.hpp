@@ -12,6 +12,7 @@ namespace GengineDevelopment {
 	using ObjectPreset = Gengine::ObjectPreset;
 	using Font = Render::Font*;
 	using Collision = CollisionObject*;
+	using Tween = Tweens::Tween*;
 
 	static Object mainTree = Gengine::mainTree;
 

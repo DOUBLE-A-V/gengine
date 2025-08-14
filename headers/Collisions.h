@@ -1,9 +1,10 @@
 #pragma once
 #include<Vector2.h>
 #include<vector>
-
 class CollisionObject {
 public:
+	static vector<CollisionObject*> allCollisions;
+
 	CollisionObject(Vector2 rect);
 	void* parent;
 	void checkChanges();
@@ -37,4 +38,3 @@ public:
 
 	float maxVertexDistance;
 };
-static vector<CollisionObject*> collisions;

@@ -1,4 +1,17 @@
-﻿  Collisions.cpp
-D:\ACDEV\gengine\source\Collisions.cpp(56,16): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-D:\ACDEV\gengine\source\Collisions.cpp(57,16): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+﻿  main.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
+  (компиляция исходного файла "source/main.cpp")
+      D:\ACDEV\gengine\include\glad\glad.h(42,9):
+      см. предыдущее определение "APIENTRY"
+  
+D:\ACDEV\gengine\headers\Gengine.h(134,9): warning C4005: MOD_SHIFT: изменение макроопределения
+  (компиляция исходного файла "source/main.cpp")
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\winuser.h(3572,9):
+      см. предыдущее определение "MOD_SHIFT"
+  
+D:\ACDEV\gengine\headers\Gengine.h(136,9): warning C4005: MOD_ALT: изменение макроопределения
+  (компиляция исходного файла "source/main.cpp")
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\winuser.h(3570,9):
+      см. предыдущее определение "MOD_ALT"
+  
   gengine.vcxproj -> D:\ACDEV\gengine\x64\Debug\gengine.exe

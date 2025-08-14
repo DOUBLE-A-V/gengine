@@ -15,6 +15,9 @@ public:
 	Vector2 operator*(float multiplier);
 
 	Vector2 operator+(Vector2 vec2);
+	Vector2 operator-(Vector2 vec2);
+
+	Vector2 operator+=(Vector2 vec2);
 
 	float distance(Vector2 pos);
 

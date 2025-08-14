@@ -12,6 +12,9 @@ chrono::system_clock::time_point Window::prevFrameTime = chrono::system_clock::n
 
 float Window::fps = 0;
 double Window::deltaTime = 0;
+
+bool Window::mainloopWorking = false;
+
 int Window::init(const char* title, int width, int height) {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -48,10 +51,11 @@ void Window::terminate() {
 	glfwTerminate();
 }
 void Window::mainloop() {
+	mainloopWorking = true;
 	if (startFunc) {
 		startFunc();
 	}
-	while (!glfwWindowShouldClose(Window::window))
+	while (mainloopWorking)
 	{
 		deltaTime = (chrono::system_clock::now() - prevFrameTime).count() / 10000000.0;
 		prevFrameTime = chrono::system_clock::now();
@@ -60,6 +64,9 @@ void Window::mainloop() {
 			updateFunc(deltaTime);
 		}
 		updateAllPoses();
+		if (glfwWindowShouldClose(window)) {
+			break;
+		}
 		Render::renderFrame();
 	}
 }

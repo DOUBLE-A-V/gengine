@@ -19,6 +19,13 @@ void(*Gengine::fixedUpdateFunc)() = NULL;
 const double pi = acos(-1);
 const double radian = pi / 180.0;
 
+thread* Gengine::fixedUpdateThread;
+thread* Gengine::tweensThread;
+
+template<typename T>
+Tweens::Tween* Gengine::createTween(void* target, T targetValue) {
+	return new Tweens::Tween(target, targetValue);
+}
 bool Gengine::getKey(int key) {
 	int keyState = glfwGetKey(Render::window, key);
 	if (keyState == GLFW_PRESS) {
@@ -48,7 +55,7 @@ void Gengine::setFixedUpdateFunc(void (*func)()) {
 	fixedUpdateFunc = func;
 }
 
-void Gengine::fixedUpdateThread() {
+void Gengine::fixedUpdateHost() {
 	while (Gengine::running) {
 		this_thread::sleep_for(chrono::microseconds(fixedUpdateDelta));
 		if (fixedUpdateFunc) {
@@ -95,6 +102,9 @@ void Gengine::Object::updateAllPoses() {
 	}
 	float s;
 	float c;
+	if (!running) {
+		return ;
+	}
 	if (transformChanged) {
 		oldRotation = rotation;
 		oldPosition = position;
@@ -366,12 +376,70 @@ void Gengine::terminateFromWindow(GLFWwindow* window) {
 }
 void Gengine::terminate() {
 	running = false;
-	this_thread::sleep_for(chrono::milliseconds(100));
-	Render::terminate();
-	for (Object* obj : Gengine::objects) {
-		delete obj;
+	Tweens::tweensHostWorking = false;
+	glfwSetWindowShouldClose(Window::window, GLFW_TRUE);
+	Window::mainloopWorking = false;
+
+	fixedUpdateThread->join();
+	tweensThread->join();
+
+	delete fixedUpdateThread;
+	delete tweensThread;
+
+	for (thread* t : Tweens::onCompleteThreads) {
+		t->join();
 	}
+	for (thread* t : Tweens::onCompleteThreads) {
+		delete t;
+	}
+
+	while (Tweens::tweens.size() != 0) {
+		delete Tweens::tweens[0];
+	}
+	Tweens::tweens.clear();
+	Tweens::tweens.shrink_to_fit();
+	while (Gengine::objects.size() != 0) {
+		delete Gengine::objects[0];
+	}
+	Gengine::objects.clear();
+	Gengine::objects.shrink_to_fit();
+	while (Render::fonts.size() != 0) {
+		delete Render::fonts[0];
+	}
+	Render::fonts.clear();
+	Render::fonts.shrink_to_fit();
+
+	while (CollisionObject::allCollisions.size() != 0) {
+		delete CollisionObject::allCollisions[0];
+	}
+	CollisionObject::allCollisions.clear();
+	CollisionObject::allCollisions.shrink_to_fit();
+	Render::terminate();
 	delete mainTree;
+}
+
+Gengine::Object::~Object() {
+	for (Modifier* mod : this->modifiers) {
+		delete mod;
+	}
+	int count = 0;
+	for (Object* obj : objects) {
+		if (obj == this) {
+			objects.erase(objects.begin() + count);
+		}
+		count++;
+	}
+}
+Gengine::Modifier::~Modifier() {
+	if (name == "Text") {
+		delete static_cast<Text*>(modifierClassPtr);
+	}
+	else if (name == "Sprite") {
+		delete static_cast<Sprite*>(modifierClassPtr);
+	}
+	else if (name == "Collision") {
+		delete static_cast<CollisionObject*>(modifierClassPtr);
+	}
 }
 int Gengine::initialize(string windowTitle, int windowWidth, int windowHeight) {
 	int windowInit = Window::init(windowTitle.c_str(), windowWidth, windowHeight);
@@ -392,7 +460,10 @@ int Gengine::initialize(string windowTitle, int windowWidth, int windowHeight) {
 }
 
 void Gengine::startMainloop() {
-	thread t(fixedUpdateThread);
+	//Tweens::startTweensHost();
+	Tweens::tweensHostWorking = true;
+	tweensThread = new thread(Tweens::tweensHost);
+	fixedUpdateThread = new thread(fixedUpdateHost);
 	Window::mainloop();
 }
 
@@ -429,6 +500,7 @@ string Gengine::repairPath(string path) {
 }
 CollisionObject* Gengine::createCollision(Vector2 rect) {
 	CollisionObject* col = new CollisionObject(rect);
+	cout << CollisionObject::allCollisions.size() << endl;
 	col->parent = mainTree;
 	col->oldRotation = col->rotation;
 	col->s = sin(radian * col->rotation);

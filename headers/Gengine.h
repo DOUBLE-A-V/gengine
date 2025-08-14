@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <thread>
 #include <Collisions.h>
+#include <Tweens.h>
 
 //all keys define
 //chars keys
@@ -202,13 +203,17 @@
 class Gengine
 {
 public:
+	template<typename T>
+	static Tweens::Tween* createTween(void* target, T targetValue);
+
 	static int fixedUpdateDelta;
 	static void (*startFunc)();
 	static void (*updateFunc)(float);
 	static void (*fixedUpdateFunc)();
 	static bool running;
-	static thread* renderThread;
-	static void fixedUpdateThread();
+	static thread* fixedUpdateThread;
+	static thread* tweensThread;
+	static void fixedUpdateHost();
 	static bool gengineInitialized;
 	using Sprite = Render::Sprite;
 	using Texture = Render::Texture;
@@ -228,7 +233,8 @@ public:
 	class Modifier {
 	public:
 		string name;
-		void* modifierClassPtr = NULL; 
+		void* modifierClassPtr = NULL;
+		~Modifier();
 	};
 	class Object {
 	public:
@@ -262,6 +268,8 @@ public:
 		Object* findFirstChild(string name, bool recursive = false);
 		void setParent(Object* newParent);
 		void addChild(Object* child);
+
+		~Object();
 
 		float realRotation;
 

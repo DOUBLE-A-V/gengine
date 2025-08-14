@@ -3,6 +3,8 @@
 const double pi = acos(-1);
 const double radian = pi / 180.0;
 
+vector<CollisionObject*> CollisionObject::allCollisions;
+
 void CollisionObject::updatePoints() {
 	dividedRectx = rect.x / 2;
 	dividedRecty = rect.y / 2;
@@ -13,8 +15,7 @@ void CollisionObject::updatePoints() {
 	point4 = Vector2(position.x - (dividedRectx * c) + (dividedRecty * s), position.y - (dividedRectx * s) - (dividedRecty * c));
 }
 CollisionObject::CollisionObject(Vector2 rect) {
-	rect = rect*2;
-	cout << (string)rect << endl;
+	rect = rect;
 	this->rect = rect;
 	this->oldRect = rect;
 	this->position = Vector2(0, 0);
@@ -26,14 +27,14 @@ CollisionObject::CollisionObject(Vector2 rect) {
 
 	this->updatePoints();
 
-	collisions.push_back(this);
+	allCollisions.push_back(this);
 }
 
 CollisionObject::~CollisionObject() {
 	int count = 0;
-	for (CollisionObject* col : collisions) {
+	for (CollisionObject* col : allCollisions) {
 		if (col == this) {
-			collisions.erase(collisions.begin() + count);
+			allCollisions.erase(allCollisions.begin() + count);
 			break;
 		}
 		count++;
@@ -84,7 +85,7 @@ bool CollisionObject::canCollide(CollisionObject* col) {
 vector<CollisionObject*> CollisionObject::checkForCollisions() {
 	vector<CollisionObject*> result;
 	checkChanges();
-	for (CollisionObject* col : collisions) {
+	for (CollisionObject* col : allCollisions) {
 		if (col != this && canCollide(col)) {
 			col->checkChanges();
 			if (isCollideNoCheckChanges(col)) {

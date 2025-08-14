@@ -49,9 +49,7 @@ public:
 		void setFilter(int filter);
 		void updateVertices();
 		~Texture() {
-			uint textures[1];
-			textures[0] = texture;
-			glDeleteTextures(1, textures);
+			glDeleteTextures(1, &(texture));
 		}
 	};
 	class Character {
@@ -66,9 +64,7 @@ public:
 			this->charCode = icharCode;
 		};
 		~Character() {
-			uint textures[1];
-			textures[0] = texture;
-			glDeleteTextures(1, textures);
+			glDeleteTextures(1, &texture);
 		}
 	};
 	class Font {
@@ -87,6 +83,7 @@ public:
 				}
 				count++;
 			}
+			chars.clear();
 		}
 		string name;
 	};
@@ -168,7 +165,7 @@ public:
 				}
 				count++;
 			}
-			delete font;
+			//glDeleteTextures(charsTextures.size(), charsTextures.data());
 		}
 	private:
 		float oldRotation = 0;

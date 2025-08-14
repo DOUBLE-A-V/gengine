@@ -72,19 +72,23 @@ int Render::init(GLFWwindow* renderWindow) {
 	glBlendEquation(GL_FUNC_ADD); // this is default
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	Render::ourShader = new Shader("gengine/vertexShader.vs", "gengine/fragmentShader.fs", getCurrentDir());
-	glfwSwapInterval(1);
+	glfwSwapInterval(0.1f);
 
 	return 0;
 }
 
 void Render::terminate() {
-	glfwSetWindowShouldClose(window, 1);
-	for (Render::Sprite* sprite : Render::sprites) {
-		delete sprite;
+	glfwSetWindowShouldClose(Render::window, GLFW_TRUE);
+	while (sprites.size() != 0) {
+		delete sprites[0];
 	}
-	for (Render::Text* text : Render::texts) {
-		delete text;
+	sprites.clear();
+	sprites.shrink_to_fit();
+	while (texts.size() != 0) {
+		delete texts[0];
 	}
+	texts.clear();
+	texts.shrink_to_fit();
 	delete Render::ourShader;
 	
 	glDeleteVertexArrays(1, &Render::VAO);
@@ -95,7 +99,6 @@ void Render::terminate() {
 void Render::renderFrame() {
 	glClearColor(0, 0.5f, 1, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
 	Render::ourShader->use();
 	for (Sprite* sprite : Render::sprites) {
 		if (sprite->texture) {
@@ -141,10 +144,6 @@ void Render::renderFrame() {
 			count++;
 		}
 	}
-	float currentTime = glfwGetTime();
-	float deltaTime = currentTime - lastTime;
-	lastTime = currentTime;
-	fps = (1 / deltaTime);
 
 	glfwSwapBuffers(Render::window);
 	glfwPollEvents();
@@ -181,8 +180,8 @@ Render::Texture* Render::loadTexture(const char* path) {
 	}
 	stbi_image_free(data);
 
-	float calcPosx = (float)0 / windowWidth / 2; // posx instead of zero
-	float calcPosy = (float)0 / windowHeight / 2;
+	float calcPosx = 0; // posx instead of zero
+	float calcPosy = 0;
 	float calcWidth = ((float)width / 2) / (windowWidth / 2);
 	float calcHeight = ((float)height / 2) / (windowHeight / 2);
 

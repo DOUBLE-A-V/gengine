@@ -6,6 +6,8 @@ public:
 	static float fps;
 	static double deltaTime;
 
+	static bool mainloopWorking;
+
 	static GLFWwindow* window;
 	static int init(const char* title, int width, int height);
 	static void mainloop();

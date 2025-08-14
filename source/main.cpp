@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include <GengineDevelopment.hpp>
 
 using namespace std;
@@ -11,7 +10,11 @@ void testUpdate(float delta) {
 	if (getMouseButton(MOUSE_BUTTON_LEFT)) {
 		mainTree->rotation += 20 * delta;
 	}
-	cout << mainTree->findFirstChild("just sprite")->getModifier<Collision>("Collision")->havePoint(getMousePos()) << " | " << (string)(getMousePos()) << endl;;
+	//cout << mainTree->findFirstChild("just sprite")->getModifier<Collision>("Collision")->havePoint(getMousePos()) << endl;
+	cout << getFPS() << endl;
+}
+void sayDildo() {
+	cout << "dildo" << endl;
 }
 int main() {
 	if (gengineInit("fuck this window", 800, 600) != 1) {
@@ -23,6 +26,11 @@ int main() {
 	image->rotation = 45;
 	setStartFunc(start);
 	setUpdateFunc(testUpdate);
+
+	Tween tween = new Tweens::Tween(&(image->rotation), 90.0f);
+	tween->start(1);
+
+	tween->onCompleteFunc = sayDildo;
 
 	startMainloop();
 	return 0;
